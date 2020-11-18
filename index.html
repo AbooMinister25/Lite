@@ -40,32 +40,34 @@
     <!-- MAIN CONTENT -->
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
-        <h2>Lite is a programming language made in python3, by Rayyan Cyclegar, or AKA AbooMinister25. Lite was made using the lark parsing library, and is still in development stages. The following is an example of a calculator made using Lite.</h2>
+        <p>Lite is a programming language made in python3, by Rayyan Cyclegar, or AKA AbooMinister25. Lite was made using the lark parsing library, and is still in development stages. The following is an example of a calculator made using Lite.</p>
+        <code>
+          print("Welcome To My Calculator!");
 
-<p>You can use the <a href="https://github.com/AbooMinister25/Lite/edit/gh-pages/index.md">editor on GitHub</a> to maintain and preview the content for your website in Markdown files.</p>
+          x = input("Enter an operation: ");
 
-<p>Whenever you commit to this repository, GitHub Pages will run <a href="https://jekyllrb.com/">Jekyll</a> to rebuild the pages in your site, from the content in your Markdown files.</p>
-
-<h3 id="markdown">Markdown</h3>
-
-<p>Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for</p>
-
-<div class="language-markdown highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Syntax highlighted code block
-
-<span class="gh"># Header 1</span>
-<span class="gu">## Header 2</span>
-<span class="gu">### Header 3</span>
-<span class="p">
--</span> Bulleted
-<span class="p">-</span> List
-<span class="p">
-1.</span> Numbered
-<span class="p">2.</span> List
-
-<span class="gs">**Bold**</span> and _Italic_ and <span class="sb">`Code`</span> text
-
-<span class="p">[</span><span class="nv">Link</span><span class="p">](</span><span class="sx">url</span><span class="p">)</span> and !<span class="p">[</span><span class="nv">Image</span><span class="p">](</span><span class="sx">src</span><span class="p">)</span>
-</code></pre></div></div>
+          if x == "plus" { 
+              num1 = input("Num1: ");
+              num2 = input("Num2: ");
+              print(num1 + num2);
+          }
+          if x == "minus" {
+              num1 = input("Num1: ");
+              num2 = input("Num2: ");
+              print(num1 - num2);
+          }
+          if x == "mul" {
+              num1 = input("Num1: ");
+              num2 = input("Num2: ");
+              print(num1 * num2);
+          }
+          if x == "div" {
+              num1 = input("Num1: ");
+              num2 = input("Num2: ");
+              print(num1 / num2);
+          }
+        </code>
+          
 
 <p>For more details see <a href="https://guides.github.com/features/mastering-markdown/">GitHub Flavored Markdown</a>.</p>
 
