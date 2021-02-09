@@ -2,7 +2,7 @@
 ### An interpreted programming language made in python3
 
 
-Lite is a programming language made in `python3`, by Rayyan Cyclegar, or AKA AbooMinister25. Lite was made using the `lark` parsing library, and is still in development stages. The following is an example of a calculator made using Lite.
+Lite is a programming language made in `python3`, by Rayyan Cyclegar. Lite was made using the `lark` parsing library, and is still in development stages. The following is an example of a calculator made using Lite.
 ```
 print("Welcome To My Calculator!");
 
@@ -29,6 +29,7 @@ if x == "div" {
     print(num1 / num2);
 }
 ```
+Lite uses a basic Tree-Walk interpreter, which partly results in its slow interpreting speeds, this is also partly because it was coded in `python3`, which isn't the fastest language in general. I've started a more complex, faster rewrite version of this programming language, which compiles itself to bytecode and is interpreted from there. This should increase the performance and speed of the language, though it may not be extremely different. At the moment, the rewrite is in python, but there are plans to use C++ in the future. You can check out the rewrite repository [Here](https://github.com/AbooMinister25/Lite-Bytecode). This repository is mostly experimental, and I don't reccomend installing it for actual usage, since it barely has any feature or functions implemented yet. Install this version for a working, operational version of the language.
 
 #### Lite currently has support for the following
 * print statements
