@@ -3,7 +3,6 @@
 //! to represent different parts of the AST. The most notable are the
 //! `Expr` and `Statement` enums.
 
-use lexer::Position;
 use std::fmt;
 
 /// Kinds of Literals
@@ -19,8 +18,6 @@ pub enum LiteralKind {
     Bool(bool),
     /// String literal (`"foo"`)
     String(String),
-    /// Identifier literal (`bar`)
-    Ident(String),
     /// Character literal (`'c'`)
     Char(char),
 }
@@ -35,7 +32,6 @@ impl fmt::Display for LiteralKind {
                 LiteralKind::Float(f) => f.to_string(),
                 LiteralKind::Bool(b) => b.to_string(),
                 LiteralKind::String(s) => s.to_string(),
-                LiteralKind::Ident(i) => i.to_string(),
                 LiteralKind::Char(c) => c.to_string(),
             }
         )
@@ -219,59 +215,57 @@ impl fmt::Display for Annotation {
     }
 }
 
+pub type Spanned<T> = (T, std::ops::Range<usize>);
+
 /// A statement is some standalone unit which does something comprised of
 /// one or more statements.
 #[derive(Debug, Clone, PartialEq)]
 pub enum Statement {
     /// An expression statement
-    Expression { expr: Expr, position: Position },
+    Expression(Spanned<Expr>),
     /// A return statement
     ///
     /// `return <expr>`
-    Return { expr: Expr, position: Position },
+    Return(Spanned<Expr>),
     /// An import statement
     ///
     /// `import package`
-    Import { name: String, position: Position },
+    Import(Spanned<Expr>),
     /// A `let` variable declaration
     ///
     /// `let [mut] <name> = <expr>`
     Let {
-        name: String,
-        value: Expr,
+        name: Spanned<String>,
+        value: Spanned<Expr>,
         mutable: bool,
-        position: Position,
     },
     /// A function declaration
     ///
     /// `func <name>(<args>) do <expr> end`
     Function {
-        name: String,
-        params: Vec<String>,
-        annotations: Vec<Annotation>,
-        body: Expr,
-        position: Position,
+        name: Spanned<String>,
+        params: Spanned<Vec<Spanned<String>>>,
+        annotations: Vec<Spanned<Annotation>>,
+        body: Spanned<Expr>,
     },
     /// A class declaration
     ///
     /// `class <name> [is] [traits] [of] [superclass] do [fields] [methods] end`
     Class {
-        name: String,
-        superclass: Option<Expr>,
-        traits: Vec<Expr>,
-        fields: Vec<Expr>,
-        instance_methods: Vec<Statement>,
-        class_methods: Vec<Statement>,
-        position: Position,
+        name: Spanned<String>,
+        superclass: Option<Spanned<Expr>>,
+        traits: Vec<Spanned<Expr>>,
+        fields: Vec<Spanned<Expr>>,
+        instance_methods: Vec<Spanned<Statement>>,
+        class_methods: Vec<Spanned<Statement>>,
     },
     /// A trait declaration
     ///
     /// `trait <name> do [fields] [methods] end`
     Trait {
-        name: String,
-        attributes: Vec<Expr>,
-        methods: Vec<Statement>,
-        position: Position,
+        name: Spanned<String>,
+        attributes: Vec<Spanned<Expr>>,
+        methods: Vec<Spanned<Statement>>,
     },
 }
 
@@ -281,23 +275,21 @@ impl fmt::Display for Statement {
             f,
             "{}",
             match self {
-                Statement::Expression { expr, .. } => expr.to_string(),
-                Statement::Return { expr, .. } => format!("return {expr}"),
-                Statement::Import { name, .. } => format!("return {name}"),
+                Statement::Expression(e) => e.0.to_string(),
+                Statement::Return(e) => format!("return {}", e.0),
+                Statement::Import(e) => format!("return {}", e.0),
                 Statement::Let {
                     name,
                     value,
                     mutable,
-                    ..
-                } if *mutable => format!("let mut {name} = {value}"),
-                Statement::Let { name, value, .. } => format!("let {name} = {value}"),
+                } if *mutable => format!("let mut {} = {}", name.0, value.0),
+                Statement::Let { name, value, .. } => format!("let {} = {}", name.0, value.0),
                 Statement::Function {
                     name,
                     params,
                     annotations: _,
                     body,
-                    ..
-                } => format!("func {name}({}) do {body}", params.join(",")),
+                } => format!("func {}({:?}) do {}", name.0, params, body.0),
                 Statement::Class {
                     name,
                     superclass,
@@ -305,9 +297,9 @@ impl fmt::Display for Statement {
                     fields,
                     instance_methods,
                     class_methods,
-                    ..
                 } => format!(
-                    "Class[name: {name}, traits: {:?}, superclass: {:?}, fields: {:?}, instance_methods: {:?}, class_methods: {:?}",
+                    "Class[name: {}, traits: {:?}, superclass: {:?}, fields: {:?}, instance_methods: {:?}, class_methods: {:?}",
+                    name.0,
                     traits,
                     superclass,
                     fields,
@@ -318,8 +310,7 @@ impl fmt::Display for Statement {
                     name,
                     attributes,
                     methods,
-                    ..
-                } => format!("Trait[name: {name}, attributes: {:?}, methods: {:?}", attributes, methods),
+                } => format!("Trait[name: {}, attributes: {:?}, methods: {:?}", name.0, attributes, methods),
             }
         )
     }
@@ -329,87 +320,64 @@ impl fmt::Display for Statement {
 #[derive(Debug, Clone, PartialEq)]
 pub enum Expr {
     /// Literals (`10`, `"Hi"`)
-    Literal {
-        value: LiteralKind,
-        position: Position,
-    },
+    Literal(LiteralKind),
+    /// Identifiers (`hello`, `foo`, `bar`)
+    Ident(String),
     /// Tuples (`(1, 2, 3)`)
-    Tuple {
-        values: Vec<Expr>,
-        position: Position,
-    },
+    Tuple(Vec<Spanned<Expr>>),
     /// Arrays (`[1, 2, 3]`)
-    Array {
-        values: Vec<Expr>,
-        position: Position,
-    },
-    /// A grouping (`(5 + 5)`)
-    Grouping { expr: Box<Expr>, position: Position },
+    Array(Vec<Spanned<Expr>>),
     /// An unary operation (`!foo`, `-bar`)
-    Unary {
-        op: String,
-        rhs: Box<Expr>,
-        position: Position,
-    },
+    Unary { op: String, rhs: Box<Spanned<Expr>> },
     /// A binary operation (`5 + 5`)
     Binary {
         op: String,
-        lhs: Box<Expr>,
-        rhs: Box<Expr>,
-        position: Position,
+        lhs: Box<Spanned<Expr>>,
+        rhs: Box<Spanned<Expr>>,
     },
     /// A function call (`foo()`)
     Call {
         name: String,
-        args: Vec<Expr>,
-        position: Position,
+        args: Vec<Spanned<Expr>>,
     },
     /// A variable assignment (`foo = 10`)
     Assignment {
         name: String,
-        value: Box<Expr>,
-        position: Position,
+        value: Box<Spanned<Expr>>,
     },
     /// A block
     ///
     /// `do <code> end`
-    Block {
-        code: Vec<Statement>,
-        position: Position,
-    },
+    Block(Vec<Spanned<Statement>>),
     /// An `if` expression
     ///
     /// `if <expr> do <code> else <code> end`
     If {
-        condition: Box<Expr>,
-        body: Vec<Expr>,
-        _else: Option<Vec<Expr>>,
-        position: Position,
+        condition: Box<Spanned<Expr>>,
+        body: Vec<Spanned<Expr>>,
+        _else: Option<Vec<Spanned<Expr>>>,
     },
     /// A for loop
     ///
     /// `for i in it do <code> end`
     For {
-        var: Box<Expr>,
-        iter: Box<Expr>,
-        body: Vec<Expr>,
-        position: Position,
+        var: Box<Spanned<Expr>>,
+        iter: Box<Spanned<Expr>>,
+        body: Vec<Spanned<Expr>>,
     },
     /// A while loop
     ///
     /// `while <expr> do <code> end`
     While {
-        expr: Box<Expr>,
-        body: Vec<Expr>,
-        position: Position,
+        expr: Box<Spanned<Expr>>,
+        body: Vec<Spanned<Expr>>,
     },
     /// A `match` block
     ///
     /// `match <expr> with | <pattern> => <code>`
     Match {
-        expr: Box<Expr>,
-        arms: Vec<MatchArm>,
-        position: Position,
+        expr: Box<Spanned<Expr>>,
+        arms: Vec<Spanned<Expr>>,
     },
 }
 
@@ -419,32 +387,30 @@ impl fmt::Display for Expr {
             f,
             "{}",
             match self {
-                Expr::Literal { value, .. } => value.to_string(),
-                Expr::Tuple { values, .. } => format!("{:?}", values),
-                Expr::Array { values, .. } => format!("{:?}", values),
-                Expr::Grouping { expr, .. } => expr.to_string(),
-                Expr::Unary { op, rhs, .. } => format!("({}{})", op, rhs),
-                Expr::Binary { op, lhs, rhs, .. } => format!("({} {} {})", op, lhs, rhs),
-                Expr::Call { name, args, .. } => format!("{}({:?})", name, args),
-                Expr::Assignment { name, value, .. } => format!("{} = {}", name, value),
-                Expr::Block { code, .. } => format!("do {:?} end", code),
+                Expr::Literal(e) => e.to_string(),
+                Expr::Ident(i) => i.to_string(),
+                Expr::Tuple(v) => format!("{:?}", v),
+                Expr::Array(v) => format!("{:?}", v),
+                Expr::Unary { op, rhs } => format!("({}{})", op, rhs.0),
+                Expr::Binary { op, lhs, rhs } => format!("({} {} {})", op, lhs.0, rhs.0),
+                Expr::Call { name, args } => format!("{}({:?})", name, args),
+                Expr::Assignment { name, value } => format!("{} = {}", name, value.0),
+                Expr::Block(c) => format!("do {:?} end", c),
                 Expr::If {
                     condition,
                     body,
                     _else,
-                    ..
-                } if _else.is_none() => format!("if {} do {:?} end", condition, body),
+                } if _else.is_none() => format!("if {} do {:?} end", condition.0, body),
                 Expr::If {
                     condition,
                     body,
                     _else,
-                    ..
-                } => format!("if {} do {:?} else {:?} end", condition, body, _else),
+                } => format!("if {} do {:?} else {:?} end", condition.0, body, _else),
                 Expr::For {
                     var, iter, body, ..
-                } => format!("for {} in {} do {:?} end", var, iter, body),
-                Expr::While { expr, body, .. } => format!("while {} do {:?} end", expr, body),
-                Expr::Match { expr, arms, .. } => format!("match {} with {:?}", expr, arms),
+                } => format!("for {} in {} do {:?} end", var.0, iter.0, body),
+                Expr::While { expr, body, .. } => format!("while {} do {:?} end", expr.0, body),
+                Expr::Match { expr, arms, .. } => format!("match {} with {:?}", expr.0, arms),
             }
         )
     }

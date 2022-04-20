@@ -1,9 +1,8 @@
-use crate::Position;
 use std::fmt;
 
 /// The `TokenKind` enum consists of the Tokens that are part of the
 /// Lite language.
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Eq, Hash)]
 pub enum TokenKind {
     // Punctuation
     OpenParen,
@@ -71,15 +70,6 @@ pub enum TokenKind {
     EoF,
 }
 
-/// The `Token` struct represents a single Token. The
-/// kind of token is represented by a `TokenKind`, and location
-/// information is stored in the `Position` struct.
-#[derive(Debug, PartialEq, Clone)]
-pub struct Token {
-    pub kind: TokenKind,
-    pub position: Position,
-}
-
 impl fmt::Display for TokenKind {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
@@ -141,11 +131,5 @@ impl fmt::Display for TokenKind {
                 TokenKind::EoF => "End of File",
             },
         )
-    }
-}
-
-impl fmt::Display for Token {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "[{}: {}]", self.kind, self.position)
     }
 }
