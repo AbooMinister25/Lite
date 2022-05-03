@@ -15,7 +15,7 @@ impl Precedence {
 }
 
 /// Returns the precedence value for a given token
-pub fn get_precedence(kind: TokenKind) -> Precedence {
+pub fn get_precedence(kind: &TokenKind) -> Precedence {
     match kind {
         // Assignment operators = += -= *= /=
         TokenKind::Equal

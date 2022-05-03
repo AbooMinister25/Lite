@@ -348,14 +348,14 @@ pub enum Expr {
     /// A block
     ///
     /// `do <code> end`
-    Block(Vec<Spanned<Statement>>),
+    Block(Vec<Spanned<Expr>>),
     /// An `if` expression
     ///
     /// `if <expr> do <code> else <code> end`
     If {
         condition: Box<Spanned<Expr>>,
-        body: Vec<Spanned<Expr>>,
-        _else: Option<Vec<Spanned<Expr>>>,
+        body: Box<Spanned<Expr>>,
+        else_: Box<Option<Spanned<Expr>>>,
     },
     /// A for loop
     ///
@@ -363,14 +363,14 @@ pub enum Expr {
     For {
         var: Box<Spanned<Expr>>,
         iter: Box<Spanned<Expr>>,
-        body: Vec<Spanned<Expr>>,
+        body: Box<Spanned<Expr>>,
     },
     /// A while loop
     ///
     /// `while <expr> do <code> end`
     While {
         expr: Box<Spanned<Expr>>,
-        body: Vec<Spanned<Expr>>,
+        body: Box<Spanned<Expr>>,
     },
     /// A `match` block
     ///
@@ -399,13 +399,13 @@ impl fmt::Display for Expr {
                 Expr::If {
                     condition,
                     body,
-                    _else,
-                } if _else.is_none() => format!("if {} do {:?} end", condition.0, body),
+                    else_,
+                } if else_.is_none() => format!("if {} do {:?} end", condition.0, body),
                 Expr::If {
                     condition,
                     body,
-                    _else,
-                } => format!("if {} do {:?} else {:?} end", condition.0, body, _else),
+                    else_,
+                } => format!("if {} do {:?} else {:?} end", condition.0, body, else_),
                 Expr::For {
                     var, iter, body, ..
                 } => format!("for {} in {} do {:?} end", var.0, iter.0, body),
