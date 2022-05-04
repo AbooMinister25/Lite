@@ -2,18 +2,6 @@
 
 use lexer::tokens::TokenKind;
 
-/// Represents possible prefix and infix precedence values
-pub struct Precedence {
-    pub prefix: Option<u8>,
-    pub infix: Option<u8>,
-}
-
-impl Precedence {
-    pub fn new(prefix: Option<u8>, infix: Option<u8>) -> Self {
-        Self { prefix, infix }
-    }
-}
-
 /// Returns the precedence value for a given token
 pub fn get_precedence(kind: &TokenKind) -> u8 {
     match kind {
