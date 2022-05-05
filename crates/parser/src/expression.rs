@@ -258,13 +258,11 @@ impl<'a> Parser<'a> {
             | TokenKind::Less
             | TokenKind::LessEqual
             | TokenKind::And
-            | TokenKind::Or => todo!(),
+            | TokenKind::Or => self.parse_binary(lhs),
             _ => todo!(),
         }
     }
 
-    /// Parses an expression
-    ///
     /// Parses an expression and returns the parsed node wrapped in a `Result`
     /// indicating whether or not the parser encountered an error.
     ///
@@ -275,7 +273,7 @@ impl<'a> Parser<'a> {
     ///
     /// let mut parser = Parser::new("5 + 5", "main.lt");
     ///
-    /// let expr = parser.parse_expression().unwrap();
+    /// let (expr, span) = parser.parse_expression().unwrap();
     pub fn parse_expression(&mut self, precedence: u8) -> Result<Spanned<Expr>, ()> {
         let token = self.advance();
 
@@ -441,6 +439,23 @@ impl<'a> Parser<'a> {
             Expr::Unary {
                 op: current.0.to_string(),
                 rhs: Box::new(expr),
+            },
+            span,
+        ))
+    }
+
+    fn parse_binary(&mut self, lhs: Spanned<Expr>) -> Result<Spanned<Expr>, ()> {
+        let op = self.advance();
+        let precedence = get_precedence(&op.0);
+
+        let rhs = self.parse_expression(precedence)?;
+        let span = lhs.1.start..rhs.1.end;
+
+        Ok((
+            Expr::Binary {
+                op: op.0.to_string(),
+                lhs: Box::new(lhs),
+                rhs: Box::new(rhs),
             },
             span,
         ))
