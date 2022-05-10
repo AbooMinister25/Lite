@@ -273,7 +273,7 @@ impl<'a> Parser<'a> {
     ///
     /// let mut parser = Parser::new("5 + 5", "main.lt");
     ///
-    /// let (expr, span) = parser.parse_expression().unwrap();
+    /// let (expr, span) = parser.parse_expression(1).unwrap();
     pub fn parse_expression(&mut self, precedence: u8) -> Result<Spanned<Expr>, ()> {
         let token = self.advance();
 
@@ -385,13 +385,13 @@ impl<'a> Parser<'a> {
         let mut items = vec![first_value];
 
         while self.peek().0 != TokenKind::CloseParen {
-            let item = self.parse_expression(1)?;
-            items.push(item);
-
             // Don't use `consume` since we don't want to error if there isn't a comma
             if self.peek().0 == TokenKind::Comma {
                 self.advance();
             }
+
+            let item = self.parse_expression(1)?;
+            items.push(item);
         }
 
         self.consume(
@@ -459,5 +459,96 @@ impl<'a> Parser<'a> {
             },
             span,
         ))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_literals() {
+        let source = "10 2.5 true false \"hi\" 'c'";
+        let mut parser = Parser::new(source, "main.lt");
+        let mut nodes = vec![];
+
+        while !parser.at_end() {
+            let (expr, _) = parser
+                .parse_expression(1)
+                .expect("Parser encountered an error");
+            nodes.push(expr.to_string());
+        }
+
+        assert_eq!(
+            nodes,
+            vec![
+                "Int[10]",
+                "Float[2.5]",
+                "Bool[true]",
+                "Bool[false]",
+                "String[hi]",
+                "Char[c]",
+            ]
+        )
+    }
+
+    #[test]
+    fn test_identifiers() {
+        let source = "foo";
+        let mut parser = Parser::new(source, "main.lt");
+
+        let (expr, _) = parser
+            .parse_expression(1)
+            .expect("Parser encountered an error");
+
+        assert_eq!(expr.to_string(), "Ident[foo]");
+    }
+
+    #[test]
+    fn test_arrays() {
+        let source = r#"[1, 2, 3] ["foo", "bar", "baz"] [hello, hey, bye] ['a', 'b', 'c']"#;
+        let mut parser = Parser::new(source, "main.lt");
+        let mut nodes = vec![];
+
+        while !parser.at_end() {
+            let (expr, _) = parser
+                .parse_expression(1)
+                .expect("Parser encountered an error");
+            nodes.push(expr.to_string());
+        }
+
+        assert_eq!(
+            nodes,
+            vec![
+                "Array[Int[1], Int[2], Int[3]]",
+                "Array[String[foo], String[bar], String[baz]]",
+                "Array[Ident[hello], Ident[hey], Ident[bye]]",
+                "Array[Char[a], Char[b], Char[c]]"
+            ]
+        );
+    }
+
+    #[test]
+    fn test_tuples() {
+        let source = r#"(1, 2, 3) ("foo", "bar", "baz") (hello, hey, bye) ('a', 'b', 'c')"#;
+        let mut parser = Parser::new(source, "main.lt");
+        let mut nodes = vec![];
+
+        while !parser.at_end() {
+            let (expr, _) = parser
+                .parse_expression(1)
+                .expect("Parser encountered an error");
+            nodes.push(expr.to_string());
+        }
+
+        assert_eq!(
+            nodes,
+            vec![
+                "Tuple[Int[1], Int[2], Int[3]]",
+                "Tuple[String[foo], String[bar], String[baz]]",
+                "Tuple[Ident[hello], Ident[hey], Ident[bye]]",
+                "Tuple[Char[a], Char[b], Char[c]]"
+            ]
+        );
     }
 }

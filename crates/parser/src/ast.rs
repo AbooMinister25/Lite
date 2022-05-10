@@ -28,11 +28,11 @@ impl fmt::Display for LiteralKind {
             f,
             "{}",
             match self {
-                LiteralKind::Int(i) => i.to_string(),
-                LiteralKind::Float(f) => f.to_string(),
-                LiteralKind::Bool(b) => b.to_string(),
-                LiteralKind::String(s) => s.to_string(),
-                LiteralKind::Char(c) => c.to_string(),
+                LiteralKind::Int(i) => format!("Int[{}]", i.to_string()),
+                LiteralKind::Float(f) => format!("Float[{}]", f.to_string()),
+                LiteralKind::Bool(b) => format!("Bool[{}]", b.to_string()),
+                LiteralKind::String(s) => format!("String[{}]", s.to_string()),
+                LiteralKind::Char(c) => format!("Char[{}]", c.to_string()),
             }
         )
     }
@@ -388,24 +388,48 @@ impl fmt::Display for Expr {
             "{}",
             match self {
                 Expr::Literal(e) => e.to_string(),
-                Expr::Ident(i) => i.to_string(),
-                Expr::Tuple(v) => format!("{:?}", v),
-                Expr::Array(v) => format!("{:?}", v),
-                Expr::Unary { op, rhs } => format!("({}{})", op, rhs.0),
-                Expr::Binary { op, lhs, rhs } => format!("({} {} {})", op, lhs.0, rhs.0),
-                Expr::Call { name, args } => format!("{}({:?})", name, args),
-                Expr::Assignment { name, value } => format!("{} = {}", name, value.0),
-                Expr::Block(c) => format!("do {:?} end", c),
+                Expr::Ident(i) => format!("Ident[{}]", i.to_string()),
+                Expr::Tuple(v) => format!(
+                    "Tuple[{}]",
+                    v.iter()
+                        .map(|i| i.0.to_string())
+                        .collect::<Vec<String>>()
+                        .join(", ")
+                ),
+                Expr::Array(v) => format!(
+                    "Array[{}]",
+                    v.iter()
+                        .map(|i| i.0.to_string())
+                        .collect::<Vec<String>>()
+                        .join(", ")
+                ),
+                Expr::Unary { op, rhs } => format!("Unary[({}{})]", op, rhs.0),
+                Expr::Binary { op, lhs, rhs } => format!("Binary[({} {} {})]", lhs.0, op, rhs.0),
+                Expr::Call { name, args } => format!("Call[{}({:?})]", name, args),
+                Expr::Assignment { name, value } => format!("Assignment[{} = {}]", name, value.0),
+                Expr::Block(c) => format!(
+                    "Block[{}]",
+                    c.iter()
+                        .map(|i| i.0.to_string())
+                        .collect::<Vec<String>>()
+                        .join(", ")
+                ),
                 Expr::If {
                     condition,
                     body,
                     else_,
-                } if else_.is_none() => format!("if {} do {:?} end", condition.0, body),
+                } if else_.is_none() => format!("If[{} -> {}]", condition.0, body.0),
                 Expr::If {
                     condition,
                     body,
                     else_,
-                } => format!("if {} do {:?} else {:?} end", condition.0, body, else_),
+                } => format!(
+                    "If[{} -> {} ^ ~{} -> {:?}]",
+                    condition.0,
+                    body.0,
+                    condition.0,
+                    else_.clone().unwrap().0
+                ),
                 Expr::For {
                     var, iter, body, ..
                 } => format!("for {} in {} do {:?} end", var.0, iter.0, body),

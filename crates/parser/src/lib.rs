@@ -44,7 +44,7 @@ pub fn parser_error(message: &str, span: std::ops::Range<usize>, source: &str) {
 /// end
 /// "#;
 ///
-/// let mut parser = Parser::new(source, "main.lt")
+/// let mut parser = Parser::new(source, "main.lt");
 pub struct Parser<'a> {
     source: &'a str,
     lexer: Lexer<'a>,
@@ -64,9 +64,9 @@ impl<'a> Parser<'a> {
     /// func main() do
     ///     println("Hello, World")
     /// end
-    /// "#
+    /// "#;
     ///
-    /// let mut parser = Parser::new(source, "main.lt")
+    /// let mut parser = Parser::new(source, "main.lt");
     pub fn new(source: &'a str, filename: &'a str) -> Self {
         Self {
             source,
@@ -74,6 +74,10 @@ impl<'a> Parser<'a> {
             filename,
             peeked: None,
         }
+    }
+
+    pub fn at_end(&mut self) -> bool {
+        self.peek().0 == TokenKind::EoF
     }
 
     fn advance(&mut self) -> Spanned<TokenKind> {

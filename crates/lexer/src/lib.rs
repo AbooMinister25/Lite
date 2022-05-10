@@ -467,7 +467,7 @@ impl<'a> Lexer<'a> {
         false
     }
 
-    fn at_end(&mut self) -> bool {
+    pub fn at_end(&mut self) -> bool {
         self.peek().is_none()
     }
 
