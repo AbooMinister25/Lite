@@ -1,2 +1,0 @@
-test_punctuation(tokens, pass):
-    take: ( ) [ ] { } , . ; :

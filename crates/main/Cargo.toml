@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 parser = { path = "../parser" }
 lexer = { path = "../lexer" }
+clap = { version = "3.1.18", features = ["derive"] }
