@@ -1,12 +1,7 @@
 use clap::Parser as ArgParser;
 use lexer::{tokens::TokenKind, Lexer};
 use parser::Parser;
-use std::{
-    fs::File,
-    io::{BufReader, Read},
-    path::Path,
-    time::Instant,
-};
+use std::{fs::File, io::Read, path::Path};
 
 #[derive(ArgParser)]
 #[clap(author, version)]
@@ -48,11 +43,19 @@ fn main() -> std::io::Result<()> {
             }
         } else {
             let mut parser = Parser::new(&content, &filename);
-            let (node, _) = parser.parse_expression(1).expect("Error while parsing");
+            let mut nodes = vec![];
+
+            while !parser.at_end() {
+                let (expr, _) = parser
+                    .parse_expression(1)
+                    .expect("Parser encountered an error");
+                nodes.push(expr);
+            }
 
             if args.output_ast {
-                println!("Generated AST:");
-                println!("{node}");
+                for node in nodes {
+                    println!("{node}");
+                }
             }
         }
     } else {

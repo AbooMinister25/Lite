@@ -10,31 +10,33 @@ class Test:
         self.path = path
         self.expect_type = expect_type
         self.values = values
+        self.flag_argument = (
+            "--tokenize" if self.expect_type == "tokens" else "--output-ast"
+        )
 
     def check(self):
-        if self.expect_type == "tokens":
-            p = subprocess.run(
-                [
-                    "cargo",
-                    "run",
-                    "-p",
-                    "main",
-                    "--",
-                    "--tokenize",
-                    self.path,
-                ],
-                capture_output=True,
-            )
-            output = p.stdout.decode("utf-8")
+        p = subprocess.run(
+            [
+                "cargo",
+                "run",
+                "-p",
+                "main",
+                "--",
+                self.flag_argument,
+                self.path,
+            ],
+            capture_output=True,
+        )
+        output = p.stdout.decode("utf-8")
 
-            tokens = output.splitlines()
-            passed = tokens == self.values
+        values = output.splitlines()
+        passed = values == self.values
 
-            if passed:
-                rprint(f" [green]passed[/green]")
-            else:
-                rprint(f" [red]failed[/red]")
-                rprint(f"expected: {self.values}\nfound: {tokens}")
+        if passed:
+            rprint(f" [green]passed[/green]")
+        else:
+            rprint(f" [red]failed[/red]")
+            print(f"expected: {self.values}\nfound: {values}")
 
 
 def parse_test(content: str, path: Path) -> list[Test]:
@@ -77,7 +79,7 @@ def run_tests(tests: list[Test]):
     rprint("[bold green]Running[/bold green] tests")
     print("========================")
     for test in tests:
-        rprint(f"[bold green]Running[/bold green] test {test.name}", end="")
+        rprint(f"[bold green]Running[/bold green] test [bold]{test.name}[/bold]", end="")
         test.check()
 
 

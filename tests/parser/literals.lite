@@ -1,0 +1,3 @@
+// expect: parse Int[10] Float[2.5] Bool[true] Bool[false] String[hi] Char[c]
+
+10 2.5 true false "hi" 'c' 2
