@@ -1,49 +1,87 @@
+import subprocess
 from pathlib import Path
-from dataclasses import dataclass
+
+from rich import print as rprint
 
 
-@dataclass
 class Test:
-    name: str
-    take: str
-    then: str
+    def __init__(self, name: str, path: str, expect_type: str, values: list[str]):
+        self.name = name
+        self.path = path
+        self.expect_type = expect_type
+        self.values = values
+
+    def check(self):
+        if self.expect_type == "tokens":
+            p = subprocess.run(
+                [
+                    "cargo",
+                    "run",
+                    "-p",
+                    "main",
+                    "--",
+                    "--tokenize",
+                    self.path,
+                ],
+                capture_output=True,
+            )
+            output = p.stdout.decode("utf-8")
+
+            tokens = output.splitlines()
+            passed = tokens == self.values
+
+            if passed:
+                rprint(f" [green]passed[/green]")
+            else:
+                rprint(f" [red]failed[/red]")
+                rprint(f"expected: {self.values}\nfound: {tokens}")
 
 
-def parse_tests(content: str) -> list[Test]:
+def parse_test(content: str, path: Path) -> list[Test]:
     tests: list[Test] = []
-    items = content.split(";")
+    test_comments = [
+        line.replace("//", "").split()
+        for line in content.splitlines()
+        if line.startswith("//")
+    ]
 
-    for item in items:
-        if item in ("", "\n"):
-            break
+    for comment in test_comments:
+        expect_type = comment[1]
+        values = comment[2:]
 
-        name, _, content = item.partition(":")
-        take, then = content.split(",")
-
-        test = Test(name.strip(), take.strip(), then.strip())
-        tests.append(test)
+        tests.append(
+            Test(
+                path.stem,
+                f"{path.parent if path.parent != 'tests' else ''}/{path.name}",
+                expect_type,
+                values,
+            )
+        )
 
     return tests
 
 
 def read_tests() -> list[Test]:
-    cwd = Path.cwd()
+    path = Path.cwd() / "tests"
     tests: list[Test] = []
 
-    for test_file in cwd.glob("tests/test_*"):
+    for test_file in path.rglob("*.lite"):
         with open(test_file, "r") as f:
             content = f.read()
-            tests.extend(parse_tests(content))
+            tests.extend(parse_test(content, test_file))
 
     return tests
 
 
-def write_tests(tests: list[Test]):
-    cwd = Path.cwd()
-    test_files = [f"test_{i.name.split('_')[1]}" for i in cwd.glob("tests/test_*")]
+def run_tests(tests: list[Test]):
+    rprint("[bold green]Running[/bold green] tests")
+    print("========================")
+    for test in tests:
+        rprint(f"[bold green]Running[/bold green] test {test.name}", end="")
+        test.check()
 
 
 if __name__ == "__main__":
     tests = read_tests()
 
-    print(tests)
+    run_tests(tests)

@@ -43,16 +43,17 @@ fn main() -> std::io::Result<()> {
                 tokens.push(tok.0);
             }
 
-            println!("Tokens: {:#?}", tokens);
-            println!("------");
-        }
+            for token in tokens {
+                println!("{:?}", token)
+            }
+        } else {
+            let mut parser = Parser::new(&content, &filename);
+            let (node, _) = parser.parse_expression(1).expect("Error while parsing");
 
-        let mut parser = Parser::new(&content, &filename);
-        let (node, _) = parser.parse_expression(1).expect("Error while parsing");
-
-        if args.output_ast {
-            println!("Generated AST:");
-            println!("{node}");
+            if args.output_ast {
+                println!("Generated AST:");
+                println!("{node}");
+            }
         }
     } else {
         println!("todo :p");

@@ -654,8 +654,11 @@ impl<'a> Lexer<'a> {
                     if self.consume('=') {
                         self.create_token(TokenKind::SlashEqual, 2)
                     } else if self.consume('/') {
-                        // Safe to unwrap since if lexer is at the end of the input, && will short circuit
-                        while !self.at_end() && self.peek().unwrap() == &'\n' {
+                        // Safe to unwrap since lexer is never at the end of input inside the loop
+                        while !self.at_end() {
+                            if self.peek().unwrap() == &'\n' {
+                                break;
+                            }
                             self.advance();
                         }
                         self.lex_token()
