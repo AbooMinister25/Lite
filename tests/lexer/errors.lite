@@ -1,0 +1,5 @@
+// expect: tokens OpenParen
+(
+
+// expect: tokens CloseParen
+)
