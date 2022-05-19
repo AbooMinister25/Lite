@@ -49,22 +49,22 @@ def parse_test(content: str, path: Path) -> list[Test]:
 
     for comment in test_comments:
         expect_type = comment[1]
+        values = comment[2:]
 
-        # todo: Probably refactor this into a for loop or something later :p
-        values = [
-            f"{value} {comment[2:][idx + 1]}"
-            if "(" in value and ")" not in value
-            else value
-            for idx, value in enumerate(comment[2:])
-            if not (")" in value and not "(" in value)
-        ]
+        new_values: list[str] = []
+
+        for idx, value in enumerate(values):
+            if "(" in value and ")" not in value:
+                new_values.append(f"{value} {values[idx + 1]}")
+            elif not (")" in value and "(" not in value):
+                new_values.append(value)
 
         tests.append(
             Test(
                 path.stem,
                 f"{path.parent if path.parent != 'tests' else ''}/{path.name}",
                 expect_type,
-                values,
+                new_values,
             )
         )
 
