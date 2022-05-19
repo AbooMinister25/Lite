@@ -49,7 +49,15 @@ def parse_test(content: str, path: Path) -> list[Test]:
 
     for comment in test_comments:
         expect_type = comment[1]
-        values = comment[2:]
+
+        # todo: Probably refactor this into a for loop or something later :p
+        values = [
+            f"{value} {comment[2:][idx + 1]}"
+            if "(" in value and ")" not in value
+            else value
+            for idx, value in enumerate(comment[2:])
+            if not (")" in value and not "(" in value)
+        ]
 
         tests.append(
             Test(
@@ -79,7 +87,9 @@ def run_tests(tests: list[Test]):
     rprint("[bold green]Running[/bold green] tests")
     print("========================")
     for test in tests:
-        rprint(f"[bold green]Running[/bold green] test [bold]{test.name}[/bold]", end="")
+        rprint(
+            f"[bold green]Running[/bold green] test [bold]{test.name}[/bold]", end=""
+        )
         test.check()
 
 
