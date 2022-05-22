@@ -337,12 +337,12 @@ pub enum Expr {
     },
     /// A function call (`foo()`)
     Call {
-        name: String,
+        callee: Box<Spanned<Expr>>,
         args: Vec<Spanned<Expr>>,
     },
     /// A variable assignment (`foo = 10`)
     Assignment {
-        name: String,
+        name: Box<Spanned<Expr>>,
         value: Box<Spanned<Expr>>,
     },
     /// A block
@@ -405,8 +405,8 @@ impl fmt::Display for Expr {
                 ),
                 Expr::Unary { op, rhs } => format!("Unary[({}{})]", op, rhs.0),
                 Expr::Binary { op, lhs, rhs } => format!("Binary[({} {} {})]", lhs.0, op, rhs.0),
-                Expr::Call { name, args } => format!("Call[{}({:?})]", name, args),
-                Expr::Assignment { name, value } => format!("Assignment[{} = {}]", name, value.0),
+                Expr::Call { callee, args } => format!("Call[{}({:?})]", callee.0, args),
+                Expr::Assignment { name, value } => format!("Assignment[{} = {}]", name.0, value.0),
                 Expr::Block(c) => format!(
                     "Block[{}]",
                     c.iter()

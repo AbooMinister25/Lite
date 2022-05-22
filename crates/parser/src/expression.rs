@@ -17,7 +17,7 @@ impl<'a> Parser<'a> {
             | TokenKind::Float(_)
             | TokenKind::True
             | TokenKind::False => Some(self.parse_literal(token)),
-            TokenKind::Ident(_) => Some(self.parse_ident(token)),
+            TokenKind::Ident(n) => Some(Ok((Expr::Ident(n), token.1))),
             TokenKind::OpenParen => Some(self.parse_grouping()),
             TokenKind::Minus => Some(self.parse_unary(token)),
             TokenKind::Bang => Some(self.parse_unary(token)),
@@ -47,6 +47,8 @@ impl<'a> Parser<'a> {
             | TokenKind::LessEqual
             | TokenKind::And
             | TokenKind::Or => self.parse_binary(lhs),
+            TokenKind::OpenParen => self.parse_call(lhs),
+            TokenKind::Equal => self.parse_assignment(lhs),
             _ => todo!(),
         }
     }
@@ -89,37 +91,6 @@ impl<'a> Parser<'a> {
             },
             current.1,
         ))
-    }
-
-    fn parse_ident(&mut self, current: Spanned<TokenKind>) -> Result<Spanned<Expr>, ()> {
-        if let TokenKind::Ident(name) = current.0 {
-            return Ok(match self.peek().0 {
-                TokenKind::Equal => {
-                    self.advance();
-                    let value = self.parse_expression(1)?;
-
-                    let span = current.1.start..value.1.end;
-
-                    (
-                        Expr::Assignment {
-                            name,
-                            value: Box::new(value),
-                        },
-                        span,
-                    )
-                }
-                TokenKind::OpenParen => {
-                    let args = self.parse_function_args()?;
-                    (
-                        Expr::Call { name, args: args.0 },
-                        current.1.start..args.1.end,
-                    )
-                }
-                _ => (Expr::Ident(name), current.1),
-            });
-        }
-
-        unreachable!(); // Unreachable since `current` will always be of kind Ident
     }
 
     fn parse_function_args(&mut self) -> Result<Spanned<Vec<Spanned<Expr>>>, ()> {
@@ -244,6 +215,31 @@ impl<'a> Parser<'a> {
                 op: op.0.to_string(),
                 lhs: Box::new(lhs),
                 rhs: Box::new(rhs),
+            },
+            span,
+        ))
+    }
+
+    fn parse_call(&mut self, lhs: Spanned<Expr>) -> Result<Spanned<Expr>, ()> {
+        let args = self.parse_function_args()?;
+        let span = lhs.1.start..args.1.end;
+        Ok((
+            Expr::Call {
+                callee: Box::new(lhs),
+                args: args.0,
+            },
+            span,
+        ))
+    }
+
+    fn parse_assignment(&mut self, lhs: Spanned<Expr>) -> Result<Spanned<Expr>, ()> {
+        let value = self.parse_expression(1)?;
+        let span = lhs.1.start..value.1.end;
+
+        Ok((
+            Expr::Assignment {
+                name: Box::new(lhs),
+                value: Box::new(value),
             },
             span,
         ))
