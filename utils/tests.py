@@ -5,66 +5,90 @@ from rich import print as rprint
 
 
 class Test:
-    def __init__(self, name: str, path: str, expect_type: str, values: list[str]):
+    def __init__(
+        self,
+        name: str,
+        path: str,
+        tests: list[tuple[str, list[str]]],
+    ):
         self.name = name
         self.path = path
-        self.expect_type = expect_type
-        self.values = values
-        self.flag_argument = (
-            "--tokenize" if self.expect_type == "tokens" else "--output-ast"
-        )
+        self.tests = tests
 
     def check(self):
-        p = subprocess.run(
-            [
-                "cargo",
-                "run",
-                "-p",
-                "main",
-                "--",
-                self.flag_argument,
-                self.path,
-            ],
-            capture_output=True,
-        )
-        output = p.stdout.decode("utf-8")
+        for test in self.tests:
+            flag_argument = "--tokenize" if test[0] == "tokens" else "--output-ast"
+            p = subprocess.run(
+                [
+                    "cargo",
+                    "run",
+                    "-p",
+                    "main",
+                    "--",
+                    flag_argument,
+                    self.path,
+                ],
+                capture_output=True,
+            )
+            output = p.stdout.decode("utf-8")
 
-        values = output.splitlines()
-        passed = values == self.values
+            values = output.splitlines()
+            passed = values == test[1]
 
-        if passed:
-            rprint(f" [green]passed[/green]")
-        else:
-            rprint(f" [red]failed[/red]")
-            print(f"expected: {self.values}\nfound: {values}")
+            if passed:
+                rprint(f" [green]passed[/green]")
+            else:
+                rprint(f" [red]failed[/red]")
+                print(f"expected: {test[1]}\nfound: {values}")
 
 
 def parse_test(content: str, path: Path) -> Test:
-    test_comments = [
-        line.replace("//", "").split()
-        for line in content.splitlines()
-        if line.startswith("//")
+    comments = [
+        line.replace("//", "") for line in content.splitlines() if line.startswith("//")
     ]
-    expected: list[str] = []
-    expect_type = test_comments[0][1]
+    expected: list[tuple[str, list[str]]] = []
 
-    for comment in test_comments:
-        values = comment[2:]
+    for comment in comments:
+        values: list[str] = []
+        pos = 0
 
-        new_values: list[str] = []
+        while pos < len(comment):
+            c = comment[pos]
+            if c.isidentifier():
+                acc = c
 
-        for idx, value in enumerate(values):
-            if "(" in value and ")" not in value:
-                new_values.append(f"{value} {values[idx + 1]}")
-            elif not (")" in value and "(" not in value):
-                new_values.append(value)
+                while pos + 1 < len(comment) and comment[pos + 1].isidentifier():
+                    pos += 1
+                    acc += comment[pos]
 
-        expected.extend(new_values)
+                if pos + 1 < len(comment) and comment[pos + 1] in ("(", "["):
+                    pos += 1
+                    value = comment[pos]
+
+                    while comment[pos] not in (")", "]"):
+                        pos += 1
+                        value += comment[pos]
+
+                        if comment[pos] in ("(", "["):
+                            while comment[pos] not in (")", "]"):
+                                pos += 1
+                                value += comment[pos]
+
+                            pos += 1
+                            value += comment[pos]
+
+                    acc += value
+
+                values.append(acc)
+
+            pos += 1
+
+        expect_type = values[1]
+        expected.append((expect_type, values[2:]))
 
     return Test(
         path.stem,
         f"{path.parent if path.parent != 'tests' else ''}/{path.name}",
-        expect_type,
         expected,
     )
 
@@ -93,5 +117,4 @@ def run_tests(tests: list[Test]):
 
 if __name__ == "__main__":
     tests = read_tests()
-
     run_tests(tests)

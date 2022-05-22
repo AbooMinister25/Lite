@@ -1,3 +1,3 @@
-// expect tokens Integer("10") Float("1.5") String("Hello World") Char('h') Ident("foo") True False
+// expect: tokens Integer("10") Float("1.5") String("Hello World") Char('h') Ident("foo") True False
 
 10 1.5 "Hello World" 'h' foo true false
