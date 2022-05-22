@@ -1,0 +1,2 @@
+// expect: tokens Error("Unterminated character literal. Expected closing quote `'`, instead found EoF (End of File)")
+'H

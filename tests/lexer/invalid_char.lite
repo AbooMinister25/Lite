@@ -1,0 +1,2 @@
+// expect: tokens Error("Character literals can only contain one codepoint")
+'Hello'

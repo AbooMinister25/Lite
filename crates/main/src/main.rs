@@ -11,6 +11,45 @@ struct Args {
     tokenize: bool,
     #[clap(short, long)]
     output_ast: bool,
+    #[clap(long)]
+    compile_string: Option<String>,
+}
+
+fn run(source: String, filename: &str, tokenize: bool, output_ast: bool) {
+    if tokenize {
+        let mut lexer = Lexer::new(&source);
+        let mut tokens = Vec::new();
+
+        loop {
+            let tok = lexer.next_token();
+
+            if tok.0 == TokenKind::EoF {
+                break;
+            }
+
+            tokens.push(tok.0);
+        }
+
+        for token in tokens {
+            println!("{:?}", token)
+        }
+    } else {
+        let mut parser = Parser::new(&source, filename);
+        let mut nodes = vec![];
+
+        while !parser.at_end() {
+            let (expr, _) = parser
+                .parse_expression(1)
+                .expect("Parser encountered an error");
+            nodes.push(expr);
+        }
+
+        if output_ast {
+            for node in nodes {
+                println!("{node}");
+            }
+        }
+    }
 }
 
 fn main() -> std::io::Result<()> {
@@ -24,40 +63,9 @@ fn main() -> std::io::Result<()> {
         file.read_to_string(&mut content)
             .expect("Error while reading from file");
 
-        if args.tokenize {
-            let mut lexer = Lexer::new(&content);
-            let mut tokens = Vec::new();
-
-            loop {
-                let tok = lexer.next_token();
-
-                if tok.0 == TokenKind::EoF {
-                    break;
-                }
-
-                tokens.push(tok.0);
-            }
-
-            for token in tokens {
-                println!("{:?}", token)
-            }
-        } else {
-            let mut parser = Parser::new(&content, &filename);
-            let mut nodes = vec![];
-
-            while !parser.at_end() {
-                let (expr, _) = parser
-                    .parse_expression(1)
-                    .expect("Parser encountered an error");
-                nodes.push(expr);
-            }
-
-            if args.output_ast {
-                for node in nodes {
-                    println!("{node}");
-                }
-            }
-        }
+        run(content, &filename, args.tokenize, args.output_ast)
+    } else if let Some(content) = args.compile_string {
+        run(content, "source.lt", args.tokenize, args.output_ast)
     } else {
         println!("todo :p");
     }

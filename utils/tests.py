@@ -9,7 +9,7 @@ class Test:
         self,
         name: str,
         path: str,
-        tests: list[tuple[str, list[str]]],
+        tests: list[tuple[str, list[str]]], 
     ):
         self.name = name
         self.path = path
@@ -65,7 +65,7 @@ def parse_test(content: str, path: Path) -> Test:
                     pos += 1
                     value = comment[pos]
 
-                    while comment[pos] not in (")", "]"):
+                    while pos + 1 < len(comment) and comment[pos] not in (")", "]"):
                         pos += 1
                         value += comment[pos]
 
@@ -85,7 +85,7 @@ def parse_test(content: str, path: Path) -> Test:
 
         expect_type = values[1]
         expected.append((expect_type, values[2:]))
-
+    
     return Test(
         path.stem,
         f"{path.parent if path.parent != 'tests' else ''}/{path.name}",
