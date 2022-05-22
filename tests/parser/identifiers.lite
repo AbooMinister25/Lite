@@ -1,0 +1,3 @@
+// expect: parse Ident[foo]
+
+foo
