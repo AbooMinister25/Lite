@@ -22,6 +22,7 @@ impl<'a> Parser<'a> {
             TokenKind::Minus => Some(self.parse_unary(token)),
             TokenKind::Bang => Some(self.parse_unary(token)),
             TokenKind::OpenBracket => Some(self.parse_array(token)),
+            TokenKind::Do => Some(self.parse_block(token)),
             _ => {
                 parser_error(
                     &format!("Invalid Syntax - Expected expression, found {}", token.0),
@@ -72,7 +73,7 @@ impl<'a> Parser<'a> {
         let token = self.advance();
 
         if let Some(mut lhs) = self.prefix_rule(token) {
-            while precedence < get_precedence(&self.peek().0) {
+            while precedence <= get_precedence(&self.peek().0) {
                 lhs = self.infix_rule(lhs?);
             }
 
@@ -205,6 +206,23 @@ impl<'a> Parser<'a> {
             },
             span,
         ))
+    }
+
+    fn parse_block(&mut self, current: Spanned<TokenKind>) -> Result<Spanned<Expr>, ()> {
+        let mut expressions = vec![];
+
+        while self.peek().0 != TokenKind::End {
+            expressions.push(self.parse_expression(1)?);
+        }
+        self.consume(TokenKind::End, "Expected to find keyword `end`"); // Consume closing `end`
+
+        let span = if expressions.is_empty() {
+            current.1.start..current.1.start + 3 // the `end` keyword is 3 characters long
+        } else {
+            current.1.start..expressions.last().unwrap().1.end // Safe to unwrap since if reached, `expressions` is never empty
+        };
+
+        Ok((Expr::Block(expressions), span))
     }
 
     fn parse_binary(&mut self, lhs: Spanned<Expr>) -> Result<Spanned<Expr>, ()> {

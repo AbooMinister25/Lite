@@ -39,7 +39,7 @@ fn run(source: String, filename: &str, tokenize: bool, output_ast: bool) {
 
         while !parser.at_end() {
             let (expr, _) = parser
-                .parse_expression(0)
+                .parse_expression(1)
                 .expect("Parser encountered an error");
             nodes.push(expr);
         }
