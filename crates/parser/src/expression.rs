@@ -17,7 +17,7 @@ impl<'a> Parser<'a> {
             | TokenKind::Float(_)
             | TokenKind::True
             | TokenKind::False => Some(self.parse_literal(token)),
-            TokenKind::Ident(n) => Some(Ok((Expr::Ident(n), token.1))),
+            TokenKind::Ident(n) => Some(Ok((Expr::Ident(n), token.1))), // No need for any extra work
             TokenKind::OpenParen => Some(self.parse_grouping()),
             TokenKind::Minus => Some(self.parse_unary(token)),
             TokenKind::Bang => Some(self.parse_unary(token)),
@@ -48,7 +48,11 @@ impl<'a> Parser<'a> {
             | TokenKind::And
             | TokenKind::Or => self.parse_binary(lhs),
             TokenKind::OpenParen => self.parse_call(lhs),
-            TokenKind::Equal => self.parse_assignment(lhs),
+            TokenKind::Equal
+            | TokenKind::PlusEqual
+            | TokenKind::MinusEqual
+            | TokenKind::SlashEqual
+            | TokenKind::StarEqual => self.parse_assignment(lhs),
             _ => todo!(),
         }
     }
@@ -233,12 +237,14 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_assignment(&mut self, lhs: Spanned<Expr>) -> Result<Spanned<Expr>, ()> {
+        let op = self.advance().0.to_string();
         let value = self.parse_expression(1)?;
         let span = lhs.1.start..value.1.end;
 
         Ok((
             Expr::Assignment {
                 name: Box::new(lhs),
+                op,
                 value: Box::new(value),
             },
             span,

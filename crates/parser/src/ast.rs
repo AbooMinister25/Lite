@@ -28,11 +28,11 @@ impl fmt::Display for LiteralKind {
             f,
             "{}",
             match self {
-                LiteralKind::Int(i) => format!("Int[{}]", i.to_string()),
-                LiteralKind::Float(f) => format!("Float[{}]", f.to_string()),
-                LiteralKind::Bool(b) => format!("Bool[{}]", b.to_string()),
-                LiteralKind::String(s) => format!("String[{}]", s.to_string()),
-                LiteralKind::Char(c) => format!("Char[{}]", c.to_string()),
+                LiteralKind::Int(i) => format!("Int[{}]", i),
+                LiteralKind::Float(f) => format!("Float[{}]", f),
+                LiteralKind::Bool(b) => format!("Bool[{}]", b),
+                LiteralKind::String(s) => format!("String[{}]", s),
+                LiteralKind::Char(c) => format!("Char[{}]", c),
             }
         )
     }
@@ -343,6 +343,7 @@ pub enum Expr {
     /// A variable assignment (`foo = 10`)
     Assignment {
         name: Box<Spanned<Expr>>,
+        op: String,
         value: Box<Spanned<Expr>>,
     },
     /// A block
@@ -406,7 +407,8 @@ impl fmt::Display for Expr {
                 Expr::Unary { op, rhs } => format!("Unary[({}{})]", op, rhs.0),
                 Expr::Binary { op, lhs, rhs } => format!("Binary[({} {} {})]", lhs.0, op, rhs.0),
                 Expr::Call { callee, args } => format!("Call[{}({:?})]", callee.0, args),
-                Expr::Assignment { name, value } => format!("Assignment[{} = {}]", name.0, value.0),
+                Expr::Assignment { name, op, value } =>
+                    format!("Assignment[{} {} {}]", name.0, op, value.0),
                 Expr::Block(c) => format!(
                     "Block[{}]",
                     c.iter()
