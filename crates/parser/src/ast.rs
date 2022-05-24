@@ -389,7 +389,7 @@ impl fmt::Display for Expr {
             "{}",
             match self {
                 Expr::Literal(e) => e.to_string(),
-                Expr::Ident(i) => format!("Ident[{}]", i.to_string()),
+                Expr::Ident(i) => format!("Ident[{}]", i),
                 Expr::Tuple(v) => format!(
                     "Tuple[{}]",
                     v.iter()
@@ -406,7 +406,14 @@ impl fmt::Display for Expr {
                 ),
                 Expr::Unary { op, rhs } => format!("Unary[({}{})]", op, rhs.0),
                 Expr::Binary { op, lhs, rhs } => format!("Binary[({} {} {})]", lhs.0, op, rhs.0),
-                Expr::Call { callee, args } => format!("Call[{}({:?})]", callee.0, args),
+                Expr::Call { callee, args } => format!(
+                    "Call[{}({})]",
+                    callee.0,
+                    args.iter()
+                        .map(|i| i.0.to_string())
+                        .collect::<Vec<String>>()
+                        .join(", ")
+                ),
                 Expr::Assignment { name, op, value } =>
                     format!("Assignment[{} {} {}]", name.0, op, value.0),
                 Expr::Block(c) => format!(
@@ -426,7 +433,7 @@ impl fmt::Display for Expr {
                     body,
                     else_,
                 } => format!(
-                    "If[{} -> {} ^ ~{} -> {:?}]",
+                    "If[{} -> {} ^ ~{} -> {}]",
                     condition.0,
                     body.0,
                     condition.0,
