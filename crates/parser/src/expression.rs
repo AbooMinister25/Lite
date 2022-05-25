@@ -24,9 +24,17 @@ impl<'a> Parser<'a> {
             TokenKind::OpenBracket => Some(self.parse_array(token)),
             TokenKind::Do => Some(self.parse_block(token)),
             TokenKind::If => Some(self.parse_conditional(token)),
+            TokenKind::End => {
+                parser_error(
+                    "Invalid Syntax - Unexpected `end`, doesn't close anything",
+                    token.1,
+                    self.source,
+                );
+                None
+            }
             _ => {
                 parser_error(
-                    &format!("Invalid Syntax - Expected expression, found {}", token.0),
+                    format!("Invalid Syntax - Expected expression, found {}", token.0).as_str(),
                     token.1,
                     self.source,
                 );
@@ -232,37 +240,37 @@ impl<'a> Parser<'a> {
         // Can't use `parse_expression` or `parse_block` since if expression syntax
         // has `end` at the end of the end of the entire `if/else/else if` chain and not
         // at individual blocks.
-        let if_body = if self.peek().0 == TokenKind::Do {
-            let span_start = self.advance().1.start;
+        let span_start = self.peek().1.start; // Start of span for next token
+        self.consume(TokenKind::Do, "Expected to find `do` in `if`");
 
-            let mut body = vec![];
-            while !(self.peek().0 == TokenKind::Else || self.peek().0 == TokenKind::End) {
-                body.push(self.parse_expression(1)?);
-            }
+        let mut body = vec![];
+        while !(self.peek().0 == TokenKind::Else || self.peek().0 == TokenKind::End) {
+            body.push(self.parse_expression(1)?);
+        }
 
-            let span = if body.is_empty() {
-                span_start..span_start + 1
-            } else {
-                span_start..body.last().unwrap().1.end // Safe to unwrap since if reached, `body` is never empty
-            };
-
-            (Expr::Block(body), span)
+        let span = if body.is_empty() {
+            span_start..span_start + 1
         } else {
-            // if expression syntax allows omitting `do..end` if only a single expression is found
-            // e.g if 5 + 5 == true 10 else 20
-            self.parse_expression(1)?
+            span_start..body.last().unwrap().1.end // Safe to unwrap since if reached, `body` is never empty
         };
 
+        let if_body = (Expr::Block(body), span);
+
         let else_ = if self.peek().0 == TokenKind::Else {
-            self.advance(); // Consume else token
-            let expr = if self.peek().0 == TokenKind::If {
+            let else_position = self.advance().1; // Consume `else` token
+            Some(if self.peek().0 == TokenKind::If {
                 let if_t = self.advance();
                 self.parse_conditional(if_t)?
             } else {
-                self.parse_expression(1)?
-            };
-
-            Some(expr)
+                if self.peek().0 != TokenKind::Do {
+                    parser_error(
+                        "Expected to find `do` after `else`",
+                        else_position,
+                        self.source,
+                    );
+                }
+                self.parse_expression(1)? // Always a block, since next token is confirmed to be a `do`
+            })
         } else {
             self.consume(TokenKind::End, "Expected to find `end` at end of block");
             None

@@ -1,9 +1,9 @@
 if true do
     print("HI")
-else if false do
-    print("oh no")
+else if flase do
+    print("HI")
 else if bar do
-    print("whee")
+    baz
 else do
-    print("whee")
+    bar
 end
