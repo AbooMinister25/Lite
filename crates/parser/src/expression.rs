@@ -6,31 +6,33 @@ use crate::precedence::get_precedence;
 use crate::{parser_error, Parser};
 use lexer::tokens::TokenKind;
 
-pub type Span = std::ops::Range<usize>;
-
 impl<'a> Parser<'a> {
-    fn prefix_rule(&mut self, token: Spanned<TokenKind>) -> Option<Result<Spanned<Expr>, ()>> {
+    fn prefix_rule(&mut self, token: Spanned<TokenKind>) -> Result<Spanned<Expr>, ()> {
         match token.0 {
             TokenKind::Integer(_)
             | TokenKind::String(_)
             | TokenKind::Char(_)
             | TokenKind::Float(_)
             | TokenKind::True
-            | TokenKind::False => Some(self.parse_literal(token)),
-            TokenKind::Ident(n) => Some(Ok((Expr::Ident(n), token.1))), // No need for any extra work
-            TokenKind::OpenParen => Some(self.parse_grouping()),
-            TokenKind::Minus => Some(self.parse_unary(token)),
-            TokenKind::Bang => Some(self.parse_unary(token)),
-            TokenKind::OpenBracket => Some(self.parse_array(token)),
-            TokenKind::Do => Some(self.parse_block(token)),
-            TokenKind::If => Some(self.parse_conditional(token)),
+            | TokenKind::False => self.parse_literal(token),
+            TokenKind::Ident(n) => Ok((Expr::Ident(n), token.1)), // No need for any extra work
+            TokenKind::OpenParen => self.parse_grouping(),
+            TokenKind::Minus => self.parse_unary(token),
+            TokenKind::Bang => self.parse_unary(token),
+            TokenKind::OpenBracket => self.parse_array(token),
+            TokenKind::Do => self.parse_block(token),
+            TokenKind::If => self.parse_conditional(token),
             TokenKind::End => {
                 parser_error(
                     "Invalid Syntax - Unexpected `end`, doesn't close anything",
                     token.1,
                     self.source,
                 );
-                None
+                Err(())
+            }
+            TokenKind::Newline => {
+                let token = self.advance(); // Ignore newline and move to next token
+                self.prefix_rule(token)
             }
             _ => {
                 parser_error(
@@ -38,7 +40,7 @@ impl<'a> Parser<'a> {
                     token.1,
                     self.source,
                 );
-                None
+                Err(())
             }
         }
     }
@@ -81,15 +83,13 @@ impl<'a> Parser<'a> {
     pub fn parse_expression(&mut self, precedence: u8) -> Result<Spanned<Expr>, ()> {
         let token = self.advance();
 
-        if let Some(mut lhs) = self.prefix_rule(token) {
-            while precedence <= get_precedence(&self.peek().0) {
-                lhs = self.infix_rule(lhs?);
-            }
+        let mut lhs = self.prefix_rule(token)?;
 
-            return lhs;
+        while precedence <= get_precedence(&self.peek().0) {
+            lhs = self.infix_rule(lhs)?;
         }
 
-        Err(())
+        Ok(lhs)
     }
 
     fn parse_literal(&mut self, current: Spanned<TokenKind>) -> Result<Spanned<Expr>, ()> {
@@ -218,10 +218,12 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_block(&mut self, current: Spanned<TokenKind>) -> Result<Spanned<Expr>, ()> {
+        self.maybe_newline();
         let mut expressions = vec![];
 
         while self.peek().0 != TokenKind::End {
             expressions.push(self.parse_expression(1)?);
+            self.maybe_newline();
         }
         self.consume(TokenKind::End, "Expected to find keyword `end`"); // Consume closing `end`
 
@@ -242,10 +244,12 @@ impl<'a> Parser<'a> {
         // at individual blocks.
         let span_start = self.peek().1.start; // Start of span for next token
         self.consume(TokenKind::Do, "Expected to find `do` in `if`");
+        self.maybe_newline();
 
         let mut body = vec![];
         while !(self.peek().0 == TokenKind::Else || self.peek().0 == TokenKind::End) {
             body.push(self.parse_expression(1)?);
+            self.maybe_newline();
         }
 
         let span = if body.is_empty() {
@@ -262,6 +266,7 @@ impl<'a> Parser<'a> {
                 let if_t = self.advance();
                 self.parse_conditional(if_t)?
             } else {
+                // Don't use `consume` since we don't want to consume the next token
                 if self.peek().0 != TokenKind::Do {
                     parser_error(
                         "Expected to find `do` after `else`",
@@ -269,7 +274,7 @@ impl<'a> Parser<'a> {
                         self.source,
                     );
                 }
-                self.parse_expression(1)? // Always a block, since next token is confirmed to be a `do`
+                self.parse_expression(1)? // Always a block, since next token is confirmed to be `do`
             })
         } else {
             self.consume(TokenKind::End, "Expected to find `end` at end of block");

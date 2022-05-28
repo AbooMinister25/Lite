@@ -1,6 +1,8 @@
 pub mod ast;
+pub mod errors;
 pub mod expression;
 pub mod precedence;
+pub mod statement;
 
 use crate::ast::Spanned;
 use crate::ast::{
@@ -105,5 +107,11 @@ impl<'a> Parser<'a> {
         }
 
         parser_error(message, token.1.clone(), self.source);
+    }
+
+    fn maybe_newline(&mut self) {
+        if self.peek().0 == TokenKind::Newline {
+            self.advance();
+        }
     }
 }

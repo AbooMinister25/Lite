@@ -1,9 +1,5 @@
 if true do
-    print("HI")
-else if flase do
-    print("HI")
-else if bar do
-    baz
-else do
     bar
+else if false do
+    baz
 end

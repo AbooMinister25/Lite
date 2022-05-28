@@ -38,10 +38,11 @@ fn run(source: String, filename: &str, tokenize: bool, output_ast: bool) {
         let mut nodes = vec![];
 
         while !parser.at_end() {
-            let (expr, _) = parser.parse_expression(1).unwrap_or_else(|_| {
+            let (node, _) = parser.parse_statement().unwrap_or_else(|_| {
                 panic!("Parser encountered an error. Recovered AST: {:?}", nodes)
             });
-            nodes.push(expr);
+            nodes.push(node);
+            println!("{:?} {:?}", parser.at_end(), nodes);
         }
 
         if output_ast {

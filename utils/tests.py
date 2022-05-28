@@ -9,7 +9,7 @@ class Test:
         self,
         name: str,
         path: str,
-        tests: list[tuple[str, list[str]]], 
+        tests: list[tuple[str, list[str]]],
     ):
         self.name = name
         self.path = path
@@ -32,7 +32,7 @@ class Test:
             )
             output = p.stdout.decode("utf-8")
 
-            values = output.splitlines()
+            values = [i for i in output.splitlines() if i != "Newline"]
             passed = values == test[1]
 
             if passed:
@@ -85,7 +85,7 @@ def parse_test(content: str, path: Path) -> Test:
 
         expect_type = values[1]
         expected.append((expect_type, values[2:]))
-    
+
     return Test(
         path.stem,
         f"{path.parent if path.parent != 'tests' else ''}/{path.name}",
