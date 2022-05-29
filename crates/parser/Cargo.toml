@@ -7,4 +7,5 @@ edition = "2021"
 
 [dependencies]
 lexer = { path = "../lexer" }
+error = { path = "../error" }
 ariadne = "0.1.5"
