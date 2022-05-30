@@ -1,14 +1,14 @@
 use crate::ast::{
     Annotation, AnnotationKind, BinOpKind, Expr, LiteralKind, MatchArm, PatKind, Range, UnaryOpKind,
 };
-use crate::errors::ParserError;
+use crate::errors::{ErrorKind, ParserError};
 use crate::precedence::get_precedence;
-use crate::{parser_error, Parser};
+use crate::Parser;
 use lexer::tokens::TokenKind;
 use span::{Span, Spanned};
 
 impl<'a> Parser<'a> {
-    fn prefix_rule(&mut self, token: Spanned<TokenKind>) -> Result<Spanned<Expr>, ()> {
+    fn prefix_rule(&mut self, token: Spanned<TokenKind>) -> Result<Spanned<Expr>, ParserError> {
         match token.0 {
             TokenKind::Integer(_)
             | TokenKind::String(_)
@@ -23,30 +23,24 @@ impl<'a> Parser<'a> {
             TokenKind::OpenBracket => self.parse_array(token),
             TokenKind::Do => self.parse_block(token),
             TokenKind::If => self.parse_conditional(token),
-            TokenKind::End => {
-                parser_error(
-                    "Invalid Syntax - Unexpected `end`, doesn't close anything",
-                    token.1,
-                    self.source,
-                );
-                Err(())
-            }
+            TokenKind::End => Err(ParserError::new(
+                ErrorKind::Unexpected(TokenKind::End, token.1),
+                "Invalid Syntax - Unexpected `end`, doesn't close anything".to_string(),
+                Some("Remove this `end`".to_string()),
+            )),
             TokenKind::Newline => {
                 let token = self.advance(); // Ignore newline and move to next token
                 self.prefix_rule(token)
             }
-            _ => {
-                parser_error(
-                    format!("Invalid Syntax - Expected expression, found {}", token.0).as_str(),
-                    token.1,
-                    self.source,
-                );
-                Err(())
-            }
+            _ => Err(ParserError::new(
+                ErrorKind::Expected(vec!["expression".to_string()], token.0, token.1),
+                "Invalid Syntax - Expected expression, found {}".to_string(),
+                None,
+            )),
         }
     }
 
-    fn infix_rule(&mut self, lhs: Spanned<Expr>) -> Result<Spanned<Expr>, ()> {
+    fn infix_rule(&mut self, lhs: Spanned<Expr>) -> Result<Spanned<Expr>, ParserError> {
         match self.peek().0 {
             TokenKind::Plus
             | TokenKind::Minus
@@ -81,7 +75,7 @@ impl<'a> Parser<'a> {
     /// let mut parser = Parser::new("5 + 5", "main.lt");
     ///
     /// let (expr, span) = parser.parse_expression(1).unwrap();
-    pub fn parse_expression(&mut self, precedence: u8) -> Result<Spanned<Expr>, ()> {
+    pub fn parse_expression(&mut self, precedence: u8) -> Result<Spanned<Expr>, ParserError> {
         let token = self.advance();
 
         let mut lhs = self.prefix_rule(token)?;
@@ -93,7 +87,7 @@ impl<'a> Parser<'a> {
         Ok(lhs)
     }
 
-    fn parse_literal(&mut self, current: Spanned<TokenKind>) -> Result<Spanned<Expr>, ()> {
+    fn parse_literal(&mut self, current: Spanned<TokenKind>) -> Result<Spanned<Expr>, ParserError> {
         Ok((
             match current.0 {
                 TokenKind::Integer(i) => Expr::Literal(LiteralKind::Int(i.parse().unwrap())), // Safe to unwrap since value is confirmed to be valid integer
@@ -108,7 +102,7 @@ impl<'a> Parser<'a> {
         ))
     }
 
-    fn parse_function_args(&mut self) -> Result<Spanned<Vec<Spanned<Expr>>>, ()> {
+    fn parse_function_args(&mut self) -> Result<Spanned<Vec<Spanned<Expr>>>, ParserError> {
         let mut args = Vec::new();
 
         self.consume(
@@ -137,7 +131,7 @@ impl<'a> Parser<'a> {
         Ok((args, span))
     }
 
-    fn parse_grouping(&mut self) -> Result<Spanned<Expr>, ()> {
+    fn parse_grouping(&mut self) -> Result<Spanned<Expr>, ParserError> {
         let expr = self.parse_expression(1)?;
         // If next token is a comma, parse as a tuple
         if self.peek().0 == TokenKind::Comma {
@@ -151,7 +145,7 @@ impl<'a> Parser<'a> {
         Ok(expr)
     }
 
-    fn parse_tuple(&mut self, first_value: Spanned<Expr>) -> Result<Spanned<Expr>, ()> {
+    fn parse_tuple(&mut self, first_value: Spanned<Expr>) -> Result<Spanned<Expr>, ParserError> {
         let start = first_value.1.start; // Store start of span for later use
         let mut items = vec![first_value];
 
@@ -174,7 +168,7 @@ impl<'a> Parser<'a> {
         Ok((Expr::Tuple(items), span))
     }
 
-    fn parse_array(&mut self, current: Spanned<TokenKind>) -> Result<Spanned<Expr>, ()> {
+    fn parse_array(&mut self, current: Spanned<TokenKind>) -> Result<Spanned<Expr>, ParserError> {
         let mut items = Vec::new();
 
         while self.peek().0 != TokenKind::CloseBracket {
@@ -197,7 +191,7 @@ impl<'a> Parser<'a> {
         Ok((Expr::Array(items), span))
     }
 
-    fn parse_unary(&mut self, current: Spanned<TokenKind>) -> Result<Spanned<Expr>, ()> {
+    fn parse_unary(&mut self, current: Spanned<TokenKind>) -> Result<Spanned<Expr>, ParserError> {
         let expr = self.parse_expression(8)?; // 8 is the precedence level for `!` and `-` as unary operators
 
         let span = Span::from(current.1.start..expr.1.end);
@@ -211,7 +205,7 @@ impl<'a> Parser<'a> {
         ))
     }
 
-    fn parse_block(&mut self, current: Spanned<TokenKind>) -> Result<Spanned<Expr>, ()> {
+    fn parse_block(&mut self, current: Spanned<TokenKind>) -> Result<Spanned<Expr>, ParserError> {
         self.maybe_newline();
         let mut expressions = vec![];
 
@@ -226,7 +220,10 @@ impl<'a> Parser<'a> {
         Ok((Expr::Block(expressions), span))
     }
 
-    fn parse_conditional(&mut self, current: Spanned<TokenKind>) -> Result<Spanned<Expr>, ()> {
+    fn parse_conditional(
+        &mut self,
+        current: Spanned<TokenKind>,
+    ) -> Result<Spanned<Expr>, ParserError> {
         let condition = self.parse_expression(1)?;
 
         // Can't use `parse_expression` or `parse_block` since if expression syntax
@@ -253,11 +250,11 @@ impl<'a> Parser<'a> {
             } else {
                 // Don't use `consume` since we don't want to consume the next token
                 if self.peek().0 != TokenKind::Do {
-                    parser_error(
-                        "Expected to find `do` after `else`",
-                        else_position,
-                        self.source,
-                    );
+                    return Err(ParserError::new(
+                        ErrorKind::Expected(vec!["do".to_string()], self.peek().0, else_position),
+                        "Expected to find `do` after `else`".to_string(),
+                        Some("Add a `do` after `else".to_string()),
+                    ));
                 }
                 self.parse_expression(1)? // Always a block, since next token is confirmed to be `do`
             })
@@ -278,7 +275,7 @@ impl<'a> Parser<'a> {
         ))
     }
 
-    fn parse_binary(&mut self, lhs: Spanned<Expr>) -> Result<Spanned<Expr>, ()> {
+    fn parse_binary(&mut self, lhs: Spanned<Expr>) -> Result<Spanned<Expr>, ParserError> {
         let op = self.advance();
         let precedence = get_precedence(&op.0);
 
@@ -295,7 +292,7 @@ impl<'a> Parser<'a> {
         ))
     }
 
-    fn parse_call(&mut self, lhs: Spanned<Expr>) -> Result<Spanned<Expr>, ()> {
+    fn parse_call(&mut self, lhs: Spanned<Expr>) -> Result<Spanned<Expr>, ParserError> {
         let args = self.parse_function_args()?;
         let span = Span::from(lhs.1.start..args.1.end);
         Ok((
@@ -307,7 +304,7 @@ impl<'a> Parser<'a> {
         ))
     }
 
-    fn parse_assignment(&mut self, lhs: Spanned<Expr>) -> Result<Spanned<Expr>, ()> {
+    fn parse_assignment(&mut self, lhs: Spanned<Expr>) -> Result<Spanned<Expr>, ParserError> {
         let op = self.advance().0.to_string();
         let value = self.parse_expression(1)?;
         let span = Span::from(lhs.1.start..value.1.end);
