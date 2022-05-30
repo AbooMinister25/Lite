@@ -1,22 +1,23 @@
 use ariadne::ReportKind;
 use error::LiteError;
 use lexer::tokens::TokenKind;
+use span::{Span, Spanned};
 use std::ops::Range;
 
 #[derive(Debug)]
 pub enum ParserError {
     /// Expected one of the given tokens, found something else
-    Expected(Vec<TokenKind>, TokenKind, Range<usize>),
+    Expected(Vec<TokenKind>, TokenKind, Span),
     /// An unclosed delimeter
-    Unclosed(TokenKind, Range<usize>),
+    Unclosed(TokenKind, Span),
     /// Found an unexpected token
-    Unexpected(TokenKind, Range<usize>),
+    Unexpected(TokenKind, Span),
     /// Another type of error occured with the given message
-    Other(String, Range<usize>),
+    Other(String, Span),
 }
 
 impl LiteError for ParserError {
-    fn labels(&self) -> Vec<(String, std::ops::Range<usize>)> {
+    fn labels(&self) -> Vec<Spanned<String>> {
         let label = match self {
             ParserError::Expected(expected, _, span) => {
                 let message = if expected.len() == 1 {
@@ -32,15 +33,11 @@ impl LiteError for ParserError {
                     )
                 };
 
-                (message, span.start..span.end)
+                (message, *span)
             }
-            ParserError::Unclosed(token, span) => {
-                (format!("Unclosed delimiter {token}"), span.start..span.end)
-            }
-            ParserError::Unexpected(token, span) => {
-                (format!("Unexpected token {token}"), span.start..span.end)
-            }
-            ParserError::Other(message, span) => (message.to_string(), span.start..span.end),
+            ParserError::Unclosed(token, span) => (format!("Unclosed delimiter {token}"), *span),
+            ParserError::Unexpected(token, span) => (format!("Unexpected token {token}"), *span),
+            ParserError::Other(message, span) => (message.to_string(), *span),
         };
 
         vec![label]

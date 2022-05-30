@@ -8,4 +8,5 @@ edition = "2021"
 [dependencies]
 lexer = { path = "../lexer" }
 error = { path = "../error" }
+span = { path = "../span" }
 ariadne = "0.1.5"

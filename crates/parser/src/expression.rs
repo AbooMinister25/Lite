@@ -1,10 +1,10 @@
 use crate::ast::{
-    Annotation, AnnotationKind, BinOpKind, Expr, LiteralKind, MatchArm, PatKind, Range, Spanned,
-    UnaryOpKind,
+    Annotation, AnnotationKind, BinOpKind, Expr, LiteralKind, MatchArm, PatKind, Range, UnaryOpKind,
 };
 use crate::precedence::get_precedence;
 use crate::{parser_error, Parser};
 use lexer::tokens::TokenKind;
+use span::{Span, Spanned};
 
 impl<'a> Parser<'a> {
     fn prefix_rule(&mut self, token: Spanned<TokenKind>) -> Result<Spanned<Expr>, ()> {
@@ -136,7 +136,7 @@ impl<'a> Parser<'a> {
             self.lexer.position..args.last().unwrap().1.end // Safe to unwrap since `args` is confirmed to not be empty
         };
 
-        Ok((args, span))
+        Ok((args, Span::from(span)))
     }
 
     fn parse_grouping(&mut self) -> Result<Spanned<Expr>, ()> {
@@ -172,7 +172,7 @@ impl<'a> Parser<'a> {
             "Expected to find closing parenthesis `)`",
         );
 
-        let span = start - 1..items.last().unwrap().1.end + 1; // Safe to unwrap since `items` has at least one value
+        let span = Span::from(start - 1..items.last().unwrap().1.end + 1); // Safe to unwrap since `items` has at least one value
         Ok((Expr::Tuple(items), span))
     }
 
@@ -200,13 +200,13 @@ impl<'a> Parser<'a> {
             current.1.start..items.last().unwrap().1.end // Safe to unwrap since `args` is confirmed to not be empty
         };
 
-        Ok((Expr::Array(items), span))
+        Ok((Expr::Array(items), Span::from(span)))
     }
 
     fn parse_unary(&mut self, current: Spanned<TokenKind>) -> Result<Spanned<Expr>, ()> {
         let expr = self.parse_expression(8)?; // 8 is the precedence level for `!` and `-` as unary operators
 
-        let span = current.1.start..expr.1.end;
+        let span = Span::from(current.1.start..expr.1.end);
 
         Ok((
             Expr::Unary {
@@ -233,7 +233,7 @@ impl<'a> Parser<'a> {
             current.1.start..expressions.last().unwrap().1.end // Safe to unwrap since if reached, `expressions` is never empty
         };
 
-        Ok((Expr::Block(expressions), span))
+        Ok((Expr::Block(expressions), Span::from(span)))
     }
 
     fn parse_conditional(&mut self, current: Spanned<TokenKind>) -> Result<Spanned<Expr>, ()> {
@@ -258,7 +258,7 @@ impl<'a> Parser<'a> {
             span_start..body.last().unwrap().1.end // Safe to unwrap since if reached, `body` is never empty
         };
 
-        let if_body = (Expr::Block(body), span);
+        let if_body = (Expr::Block(body), Span::from(span));
 
         let else_ = if self.peek().0 == TokenKind::Else {
             let else_position = self.advance().1; // Consume `else` token
@@ -293,7 +293,7 @@ impl<'a> Parser<'a> {
                 body: Box::new(if_body),
                 else_: Box::new(else_),
             },
-            span,
+            Span::from(span),
         ))
     }
 
@@ -302,7 +302,7 @@ impl<'a> Parser<'a> {
         let precedence = get_precedence(&op.0);
 
         let rhs = self.parse_expression(precedence)?;
-        let span = lhs.1.start..rhs.1.end;
+        let span = Span::from(lhs.1.start..rhs.1.end);
 
         Ok((
             Expr::Binary {
@@ -316,7 +316,7 @@ impl<'a> Parser<'a> {
 
     fn parse_call(&mut self, lhs: Spanned<Expr>) -> Result<Spanned<Expr>, ()> {
         let args = self.parse_function_args()?;
-        let span = lhs.1.start..args.1.end;
+        let span = Span::from(lhs.1.start..args.1.end);
         Ok((
             Expr::Call {
                 callee: Box::new(lhs),
@@ -329,7 +329,7 @@ impl<'a> Parser<'a> {
     fn parse_assignment(&mut self, lhs: Spanned<Expr>) -> Result<Spanned<Expr>, ()> {
         let op = self.advance().0.to_string();
         let value = self.parse_expression(1)?;
-        let span = lhs.1.start..value.1.end;
+        let span = Span::from(lhs.1.start..value.1.end);
 
         Ok((
             Expr::Assignment {

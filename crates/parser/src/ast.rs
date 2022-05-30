@@ -3,6 +3,7 @@
 //! to represent different parts of the AST. The most notable are the
 //! `Expr` and `Statement` enums.
 
+use span::Spanned;
 use std::fmt;
 
 /// Kinds of Literals
@@ -214,8 +215,6 @@ impl fmt::Display for Annotation {
         write!(f, "{}: {}", self.name, self.kind)
     }
 }
-
-pub type Spanned<T> = (T, std::ops::Range<usize>);
 
 /// A statement is some standalone unit which does something comprised of
 /// one or more statements.

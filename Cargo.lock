@@ -78,6 +78,7 @@ name = "error"
 version = "0.1.0"
 dependencies = [
  "ariadne",
+ "span",
 ]
 
 [[package]]
@@ -153,6 +154,7 @@ dependencies = [
  "ariadne",
  "error",
  "lexer",
+ "span",
 ]
 
 [[package]]
@@ -200,6 +202,9 @@ dependencies = [
 [[package]]
 name = "span"
 version = "0.1.0"
+dependencies = [
+ "ariadne",
+]
 
 [[package]]
 name = "strsim"

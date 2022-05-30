@@ -4,13 +4,15 @@
 //! `LiteError` trait can then be used to construct a report using the `ariadne` crate.
 
 #![warn(clippy::pedantic, clippy::nursery)]
+#![allow(clippy::must_use_candidate)]
 
 use ariadne::{Color, Label, Report, ReportKind, Source};
+use span::{Span, Spanned};
 
 /// This trait can be implemented to provide an interface usable for
 /// creating reportss
 pub trait LiteError {
-    fn labels(&self) -> Vec<(String, std::ops::Range<usize>)>;
+    fn labels(&self) -> Vec<Spanned<String>>;
     fn message(&self) -> String;
     fn kind(&self) -> ReportKind;
     fn help(&self) -> Option<String> {
@@ -27,7 +29,7 @@ pub trait LiteError {
             ReportKind::Custom(_, color) => color,
         }
     }
-    fn build_report(&self) -> ariadne::Report {
+    fn build_report(&self) -> ariadne::Report<Span> {
         let offset = &self.labels().iter().fold(
             0,
             |acc, (_, span)| if span.start > acc { span.start } else { acc },
@@ -37,7 +39,7 @@ pub trait LiteError {
         report.add_labels(
             self.labels()
                 .iter()
-                .map(|(label, span)| Label::new(span.start..span.end).with_message(label)),
+                .map(|(label, span)| Label::new(*span).with_message(label)),
         );
 
         if let Some(note) = self.note() {

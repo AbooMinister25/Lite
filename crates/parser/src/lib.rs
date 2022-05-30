@@ -14,12 +14,13 @@ pub mod expression;
 pub mod precedence;
 pub mod statement;
 
-use crate::ast::Spanned;
+// use crate::ast::Spanned;
 use crate::ast::{
     Annotation, AnnotationKind, BinOpKind, Expr, LiteralKind, MatchArm, PatKind, Range, UnaryOpKind,
 };
 use ariadne::{Color, ColorGenerator, Fmt, Label, Report, ReportBuilder, ReportKind, Source};
 use lexer::{tokens::TokenKind, Lexer};
+use span::{Span, Spanned};
 
 /// Creates and emits a parser error
 ///
@@ -30,7 +31,7 @@ use lexer::{tokens::TokenKind, Lexer};
 ///
 /// parser_error("Unclosed string", 1..6, "\"Hello");
 /// ```
-pub fn parser_error(message: &str, span: std::ops::Range<usize>, source: &str) {
+pub fn parser_error(message: &str, span: Span, source: &str) {
     Report::build(ReportKind::Error, (), span.start)
         .with_message(message.to_string())
         .with_label(
