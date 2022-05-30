@@ -1,5 +1,4 @@
-use crate::ast::Spanned;
-use ariadne::{Color, ColorGenerator, Fmt, Label, Report, ReportBuilder, ReportKind, Source};
+use ariadne::ReportKind;
 use error::LiteError;
 use lexer::tokens::TokenKind;
 use std::ops::Range;

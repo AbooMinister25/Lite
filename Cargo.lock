@@ -121,6 +121,7 @@ checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 name = "lexer"
 version = "0.1.0"
 dependencies = [
+ "span",
  "unicode-xid",
 ]
 
@@ -195,6 +196,10 @@ checksum = "a1feb54ed693b93a84e14094943b84b7c4eae204c512b7ccb95ab0c66d278ad1"
 dependencies = [
  "proc-macro2",
 ]
+
+[[package]]
+name = "span"
+version = "0.1.0"
 
 [[package]]
 name = "strsim"

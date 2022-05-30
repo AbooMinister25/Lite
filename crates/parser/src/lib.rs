@@ -1,3 +1,13 @@
+//! The parser takes a source string and parses it into an Abstract Syntax Tree, or
+//! AST. Lite uses a Pratt Parser, which allows top-down operator-precedence parsing.
+//! Parsing rules for expressions and statements are separated into two different files,
+//! while shared functions are defined here. Lite's parser also employs error recovery
+//! through a process called synchronization, so if the parser encounters an error, it
+//! can discard tokens until it hits a point at which it can safely start parsing again.
+
+#![warn(clippy::pedantic, clippy::nursery)]
+#![allow(clippy::must_use_candidate)]
+
 pub mod ast;
 pub mod errors;
 pub mod expression;
@@ -92,10 +102,9 @@ impl<'a> Parser<'a> {
     fn peek(&mut self) -> &Spanned<TokenKind> {
         if self.peeked.is_none() {
             self.peeked = Some(self.advance());
-            self.peeked.as_ref().unwrap()
-        } else {
-            self.peeked.as_ref().unwrap()
         }
+
+        self.peeked.as_ref().unwrap()
     }
 
     fn consume(&mut self, expected: TokenKind, message: &str) {

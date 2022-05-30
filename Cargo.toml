@@ -1,2 +1,2 @@
 [workspace]
-members = ["crates/parser", "crates/lexer", "crates/main", "crates/error"]
+members = ["crates/parser", "crates/lexer", "crates/main", "crates/error", "crates/span"]

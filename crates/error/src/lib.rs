@@ -3,6 +3,8 @@
 //! error types and information specific to that area of the parser. Anything that implements the
 //! `LiteError` trait can then be used to construct a report using the `ariadne` crate.
 
+#![warn(clippy::pedantic, clippy::nursery)]
+
 use ariadne::{Color, Label, Report, ReportKind, Source};
 
 /// This trait can be implemented to provide an interface usable for
@@ -39,11 +41,11 @@ pub trait LiteError {
         );
 
         if let Some(note) = self.note() {
-            report.set_note(note)
+            report.set_note(note);
         }
 
         if let Some(help) = self.help() {
-            report.set_help(help)
+            report.set_help(help);
         }
 
         report.finish()
@@ -70,7 +72,7 @@ impl<'a> Reporter<'a> {
 
     /// Loops over all reports and prints them to the stderr
     pub fn report(&self) -> Result<(), std::io::Error> {
-        for report in self.reports.iter() {
+        for report in &self.reports {
             report.build_report().eprint(Source::from(self.source))?;
         }
 
@@ -79,11 +81,11 @@ impl<'a> Reporter<'a> {
 
     /// Adds a single report to the `Reporter`
     pub fn add_report(&mut self, report: Box<dyn LiteError>) {
-        self.reports.push(report)
+        self.reports.push(report);
     }
 
     /// Extends the `Reporter` from a vec of reports
     pub fn add_reports(&mut self, mut reports: Vec<Box<dyn LiteError>>) {
-        self.reports.append(&mut reports)
+        self.reports.append(&mut reports);
     }
 }

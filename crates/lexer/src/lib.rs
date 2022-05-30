@@ -3,14 +3,18 @@
 //! Meaningful in the sense that things akin to whitespace and comments
 //! are filtered out, as they would end up being unnecessary junk for the parser.
 
+#![warn(clippy::pedantic, clippy::nursery)]
+#![allow(clippy::must_use_candidate)]
+
 pub mod tokens;
 
 use std::{iter::Peekable, str::Chars};
 
 use crate::tokens::TokenKind;
+use span::{Span, Spanned};
 use unicode_xid::UnicodeXID;
 
-type Spanned<T> = (T, std::ops::Range<usize>);
+// type Spanned<T> = (T, std::ops::Range<usize>);
 
 fn get_keyword(value: &str, keyword: &str, length: usize, token: TokenKind) -> TokenKind {
     if value[length..] == keyword[length..] {
@@ -183,7 +187,7 @@ impl<'a> Lexer<'a> {
     }
 
     fn create_token(&mut self, kind: TokenKind, len: usize) -> Spanned<TokenKind> {
-        (kind, self.position - len..self.position)
+        (kind, Span::from(self.position - len..self.position))
     }
 
     fn lex_string(&mut self) -> Spanned<TokenKind> {
