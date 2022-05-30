@@ -62,6 +62,7 @@ pub struct Parser<'a> {
     source: &'a str,
     lexer: Lexer<'a>,
     filename: &'a str,
+    current_token_span: Span,
     peeked: Option<Spanned<TokenKind>>,
 }
 
@@ -85,6 +86,7 @@ impl<'a> Parser<'a> {
             source,
             lexer: Lexer::new(source),
             filename,
+            current_token_span: Span::from(0..0),
             peeked: None,
         }
     }
@@ -94,9 +96,13 @@ impl<'a> Parser<'a> {
     }
 
     fn advance(&mut self) -> Spanned<TokenKind> {
-        match self.peeked.take() {
-            Some(t) => t,
-            None => self.lexer.next_token(),
+        if let Some(t) = self.peeked.take() {
+            self.current_token_span = t.1;
+            t
+        } else {
+            let t = self.lexer.next_token();
+            self.current_token_span = t.1;
+            t
         }
     }
 
@@ -116,12 +122,16 @@ impl<'a> Parser<'a> {
             return;
         }
 
-        parser_error(message, token.1.clone(), self.source);
+        parser_error(message, token.1, self.source);
     }
 
     fn maybe_newline(&mut self) {
         if self.peek().0 == TokenKind::Newline {
             self.advance();
         }
+    }
+
+    const fn current_span(&self) -> Span {
+        self.current_token_span
     }
 }

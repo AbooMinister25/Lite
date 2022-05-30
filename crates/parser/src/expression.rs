@@ -1,6 +1,7 @@
 use crate::ast::{
     Annotation, AnnotationKind, BinOpKind, Expr, LiteralKind, MatchArm, PatKind, Range, UnaryOpKind,
 };
+use crate::errors::ParserError;
 use crate::precedence::get_precedence;
 use crate::{parser_error, Parser};
 use lexer::tokens::TokenKind;
@@ -115,6 +116,8 @@ impl<'a> Parser<'a> {
             "Expected to find opening parenthesis `(`",
         );
 
+        let start = self.current_span();
+
         while self.peek().0 != TokenKind::CloseParen {
             let arg = self.parse_expression(1)?;
             args.push(arg);
@@ -130,13 +133,8 @@ impl<'a> Parser<'a> {
             "Expected to find closing parenthesis `(`",
         );
 
-        let span = if args.is_empty() {
-            self.lexer.position..self.lexer.position + 1
-        } else {
-            self.lexer.position..args.last().unwrap().1.end // Safe to unwrap since `args` is confirmed to not be empty
-        };
-
-        Ok((args, Span::from(span)))
+        let span = Span::from(start.start..self.current_span().end);
+        Ok((args, span))
     }
 
     fn parse_grouping(&mut self) -> Result<Spanned<Expr>, ()> {
@@ -194,13 +192,9 @@ impl<'a> Parser<'a> {
             "Expected to find closing bracket `]`",
         );
 
-        let span = if items.is_empty() {
-            current.1.start..current.1.start + 1
-        } else {
-            current.1.start..items.last().unwrap().1.end // Safe to unwrap since `args` is confirmed to not be empty
-        };
+        let span = Span::from(current.1.start..self.current_span().end);
 
-        Ok((Expr::Array(items), Span::from(span)))
+        Ok((Expr::Array(items), span))
     }
 
     fn parse_unary(&mut self, current: Spanned<TokenKind>) -> Result<Spanned<Expr>, ()> {
@@ -227,13 +221,9 @@ impl<'a> Parser<'a> {
         }
         self.consume(TokenKind::End, "Expected to find keyword `end`"); // Consume closing `end`
 
-        let span = if expressions.is_empty() {
-            current.1.start..current.1.start + 3 // the `end` keyword is 3 characters long
-        } else {
-            current.1.start..expressions.last().unwrap().1.end // Safe to unwrap since if reached, `expressions` is never empty
-        };
+        let span = Span::from(current.1.start..self.current_span().end);
 
-        Ok((Expr::Block(expressions), Span::from(span)))
+        Ok((Expr::Block(expressions), span))
     }
 
     fn parse_conditional(&mut self, current: Spanned<TokenKind>) -> Result<Spanned<Expr>, ()> {
@@ -242,8 +232,8 @@ impl<'a> Parser<'a> {
         // Can't use `parse_expression` or `parse_block` since if expression syntax
         // has `end` at the end of the end of the entire `if/else/else if` chain and not
         // at individual blocks.
-        let span_start = self.peek().1.start; // Start of span for next token
         self.consume(TokenKind::Do, "Expected to find `do` in `if`");
+        let span_start = self.current_span().start; // Start of span for next token
         self.maybe_newline();
 
         let mut body = vec![];
@@ -252,13 +242,8 @@ impl<'a> Parser<'a> {
             self.maybe_newline();
         }
 
-        let span = if body.is_empty() {
-            span_start..span_start + 1
-        } else {
-            span_start..body.last().unwrap().1.end // Safe to unwrap since if reached, `body` is never empty
-        };
-
-        let if_body = (Expr::Block(body), Span::from(span));
+        let span = Span::from(span_start..self.current_span().end);
+        let if_body = (Expr::Block(body), span);
 
         let else_ = if self.peek().0 == TokenKind::Else {
             let else_position = self.advance().1; // Consume `else` token
@@ -281,11 +266,7 @@ impl<'a> Parser<'a> {
             None
         };
 
-        let span = if else_.is_some() {
-            current.1.start..else_.as_ref().unwrap().1.end
-        } else {
-            current.1.start..if_body.1.end
-        };
+        let span = Span::from(current.1.start..self.current_span().end);
 
         Ok((
             Expr::If {
@@ -293,7 +274,7 @@ impl<'a> Parser<'a> {
                 body: Box::new(if_body),
                 else_: Box::new(else_),
             },
-            Span::from(span),
+            span,
         ))
     }
 

@@ -2,7 +2,6 @@ use ariadne::ReportKind;
 use error::LiteError;
 use lexer::tokens::TokenKind;
 use span::{Span, Spanned};
-use std::ops::Range;
 
 #[derive(Debug)]
 pub enum ParserError {
@@ -27,7 +26,7 @@ impl LiteError for ParserError {
                         "Expected to find one of {:?}",
                         expected
                             .iter()
-                            .map(|t| t.to_string())
+                            .map(std::string::ToString::to_string)
                             .collect::<Vec<String>>()
                             .join(", ")
                     )
@@ -56,7 +55,7 @@ impl LiteError for ParserError {
                         "Expected to find one of {:?}, instead found {found}",
                         expected
                             .iter()
-                            .map(|t| t.to_string())
+                            .map(std::string::ToString::to_string)
                             .collect::<Vec<String>>()
                             .join(", ")
                     )

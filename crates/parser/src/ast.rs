@@ -276,7 +276,7 @@ impl fmt::Display for Statement {
             match self {
                 Statement::Expression(e) => e.0.to_string(),
                 Statement::Return(e) => format!("return {}", e.0),
-                Statement::Import(e) => format!("return {}", e.0),
+                Statement::Import(e) => format!("import {}", e.0),
                 Statement::Let {
                     name,
                     value,
