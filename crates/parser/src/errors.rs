@@ -39,7 +39,7 @@ impl ParserError {
 
 impl LiteError for ParserError {
     fn labels(&self) -> Vec<Spanned<String>> {
-        let label = match self.kind {
+        let label = match &self.kind {
             ErrorKind::Expected(expected, _, span) => {
                 let message = if expected.len() == 1 {
                     format!("Expected to find token {}", expected[0])
@@ -47,25 +47,25 @@ impl LiteError for ParserError {
                     format!("Expected to find one of {:?}", expected)
                 };
 
-                (message, span)
+                (message, *span)
             }
-            ErrorKind::Unclosed(token, span) => (format!("Unclosed delimiter {token}"), span),
-            ErrorKind::Unexpected(token, span) => (format!("Unexpected token {token}"), span),
-            ErrorKind::Other(message, span) => (message.to_string(), span),
+            ErrorKind::Unclosed(token, span) => (format!("Unclosed delimiter {token}"), *span),
+            ErrorKind::Unexpected(token, span) => (format!("Unexpected token {token}"), *span),
+            ErrorKind::Other(message, span) => (message.to_string(), *span),
         };
 
         vec![label]
     }
 
-    fn message(&self) -> String {
-        self.message
+    fn message(&self) -> &String {
+        &self.message
     }
 
     fn kind(&self) -> ReportKind {
         ReportKind::Error
     }
 
-    fn help(&self) -> Option<String> {
-        self.help
+    fn help(&self) -> Option<&String> {
+        self.help.as_ref()
     }
 }

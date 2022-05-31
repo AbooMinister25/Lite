@@ -16,8 +16,10 @@ pub mod statement;
 
 // use crate::ast::Spanned;
 use crate::ast::{
-    Annotation, AnnotationKind, BinOpKind, Expr, LiteralKind, MatchArm, PatKind, Range, UnaryOpKind,
+    Annotation, AnnotationKind, BinOpKind, Expr, LiteralKind, MatchArm, PatKind, Range, Statement,
+    UnaryOpKind,
 };
+use crate::errors::ParserError;
 use ariadne::{Color, ColorGenerator, Fmt, Label, Report, ReportBuilder, ReportKind, Source};
 use lexer::{tokens::TokenKind, Lexer};
 use span::{Span, Spanned};
@@ -89,6 +91,44 @@ impl<'a> Parser<'a> {
             current_token_span: Span::from(0..0),
             peeked: None,
         }
+    }
+
+    /// Parses and returns a tuple consisting of the parsed AST and any
+    /// errors that may have occured.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use parser::Parser;
+    ///
+    /// let source = r#"
+    /// func main() do
+    ///     println("Hello, World")
+    /// end
+    /// "#;
+    ///
+    /// let mut parser = Parser::new(source, "main.lt");
+    /// let (ast, errors) = parser.parse();
+    /// ```
+    pub fn parse(&mut self) -> (Vec<Spanned<Statement>>, Vec<ParserError>) {
+        let mut nodes = vec![];
+        let mut errors = vec![];
+
+        while !self.at_end() {
+            // Consume newlines
+            if self.peek().0 == TokenKind::Newline {
+                self.advance();
+                continue; // Don't use a while loop since we want the parser to stop if it has reached the end of input
+            }
+
+            let node = self.parse_statement();
+            match node {
+                Ok(n) => nodes.push(n),
+                Err(e) => errors.push(e),
+            };
+        }
+
+        (nodes, errors)
     }
 
     pub fn at_end(&mut self) -> bool {

@@ -1,4 +1,8 @@
+#![warn(clippy::pedantic, clippy::nursery)]
+#![allow(clippy::must_use_candidate)]
+
 use clap::Parser as ArgParser;
+use error::Reporter;
 use lexer::{tokens::TokenKind, Lexer};
 use parser::Parser;
 use std::{fs::File, io::Read, path::Path};
@@ -31,25 +35,35 @@ fn run(source: String, filename: &str, tokenize: bool, output_ast: bool) {
         }
 
         for token in tokens {
-            println!("{:?}", token)
+            println!("{:?}", token);
         }
     } else {
         let mut parser = Parser::new(&source, filename);
-        let mut nodes = vec![];
+        let mut reporter = Reporter::new(vec![], &source);
 
-        while !parser.at_end() {
-            let (node, _) = parser.parse_statement().unwrap_or_else(|_| {
-                panic!("Parser encountered an error. Recovered AST: {:?}", nodes)
-            });
-            nodes.push(node);
-            println!("{:?} {:?}", parser.at_end(), nodes);
-        }
+        let (ast, errors) = parser.parse();
+        reporter.add_reports(errors);
+
+        // let mut nodes = vec![];
+
+        // let mut reporter = Reporter::new(vec![], &source);
+
+        // while !parser.at_end() {
+        //     let node = parser.parse_statement();
+
+        //     match node {
+        //         Ok(n) => nodes.push(n.0),
+        //         Err(e) => reporter.add_report(Box::new(e)),
+        //     }
+        // }
 
         if output_ast {
-            for node in nodes {
-                println!("{node}");
+            for node in ast {
+                println!("{}", node.0);
             }
         }
+
+        reporter.report().expect("Error while reporting errors");
     }
 }
 

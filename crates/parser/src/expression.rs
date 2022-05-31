@@ -18,8 +18,7 @@ impl<'a> Parser<'a> {
             | TokenKind::False => self.parse_literal(token),
             TokenKind::Ident(n) => Ok((Expr::Ident(n), token.1)), // No need for any extra work
             TokenKind::OpenParen => self.parse_grouping(),
-            TokenKind::Minus => self.parse_unary(token),
-            TokenKind::Bang => self.parse_unary(token),
+            TokenKind::Minus | TokenKind::Bang => self.parse_unary(token),
             TokenKind::OpenBracket => self.parse_array(token),
             TokenKind::Do => self.parse_block(token),
             TokenKind::If => self.parse_conditional(token),
@@ -28,15 +27,15 @@ impl<'a> Parser<'a> {
                 "Invalid Syntax - Unexpected `end`, doesn't close anything".to_string(),
                 Some("Remove this `end`".to_string()),
             )),
-            TokenKind::Newline => {
-                let token = self.advance(); // Ignore newline and move to next token
-                self.prefix_rule(token)
+            TokenKind::Newline => self.parse_expression(1), // Ignore newline
+            _ => {
+                let repr = token.0.to_string();
+                Err(ParserError::new(
+                    ErrorKind::Expected(vec!["expression".to_string()], token.0, token.1),
+                    format!("Invalid Syntax - Expected expression, found {}", repr),
+                    None,
+                ))
             }
-            _ => Err(ParserError::new(
-                ErrorKind::Expected(vec!["expression".to_string()], token.0, token.1),
-                "Invalid Syntax - Expected expression, found {}".to_string(),
-                None,
-            )),
         }
     }
 
@@ -81,6 +80,7 @@ impl<'a> Parser<'a> {
         let mut lhs = self.prefix_rule(token)?;
 
         while precedence <= get_precedence(&self.peek().0) {
+            println!("{:?}", self.peek().0);
             lhs = self.infix_rule(lhs)?;
         }
 
@@ -251,7 +251,11 @@ impl<'a> Parser<'a> {
                 // Don't use `consume` since we don't want to consume the next token
                 if self.peek().0 != TokenKind::Do {
                     return Err(ParserError::new(
-                        ErrorKind::Expected(vec!["do".to_string()], self.peek().0, else_position),
+                        ErrorKind::Expected(
+                            vec!["do".to_string()],
+                            self.peek().0.clone(),
+                            else_position,
+                        ),
                         "Expected to find `do` after `else`".to_string(),
                         Some("Add a `do` after `else".to_string()),
                     ));

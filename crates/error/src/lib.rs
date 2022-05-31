@@ -13,9 +13,9 @@ use span::{Span, Spanned};
 /// creating reportss
 pub trait LiteError {
     fn labels(&self) -> Vec<Spanned<String>>;
-    fn message(&self) -> String;
+    fn message(&self) -> &String;
     fn kind(&self) -> ReportKind;
-    fn help(&self) -> Option<String> {
+    fn help(&self) -> Option<&String> {
         None
     }
     fn note(&self) -> Option<String> {
@@ -87,7 +87,11 @@ impl<'a> Reporter<'a> {
     }
 
     /// Extends the `Reporter` from a vec of reports
-    pub fn add_reports(&mut self, mut reports: Vec<Box<dyn LiteError>>) {
-        self.reports.append(&mut reports);
+    pub fn add_reports<T: 'static + LiteError>(&mut self, reports: Vec<T>) {
+        let mut new_reports = reports
+            .into_iter()
+            .map(|r| Box::new(r) as Box<dyn LiteError>)
+            .collect::<Vec<Box<dyn LiteError>>>();
+        self.reports.append(&mut new_reports);
     }
 }
