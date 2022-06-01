@@ -9,7 +9,7 @@ class Test:
         self,
         name: str,
         path: str,
-        tests: list[tuple[str, list[str]]],
+        tests: list[tuple[str, str]],
     ):
         self.name = name
         self.path = path
@@ -32,7 +32,10 @@ class Test:
             )
             output = p.stdout.decode("utf-8")
 
-            values = [i for i in output.splitlines() if i != "Newline"]
+            values = " ".join(
+                [i for i in output.splitlines() if i != "Newline"]
+            ).strip()
+
             passed = values == test[1]
 
             if passed:
@@ -46,45 +49,19 @@ def parse_test(content: str, path: Path) -> Test:
     comments = [
         line.replace("//", "") for line in content.splitlines() if line.startswith("//")
     ]
-    expected: list[tuple[str, list[str]]] = []
+    expected: list[tuple[str, str]] = []
 
     for comment in comments:
-        values: list[str] = []
-        pos = 0
+        values = comment.split(":")[1].strip()
 
-        while pos < len(comment):
-            c = comment[pos]
-            if c.isidentifier():
-                acc = c
+        if values.startswith("parse"):
+            test_type = "parse"
+            values = values.removeprefix("parse").strip()
+        else:
+            test_type = "tokens"
+            values = values.removeprefix("tokens").strip()
 
-                while pos + 1 < len(comment) and comment[pos + 1].isidentifier():
-                    pos += 1
-                    acc += comment[pos]
-
-                if pos + 1 < len(comment) and comment[pos + 1] in ("(", "["):
-                    pos += 1
-                    value = comment[pos]
-
-                    while pos + 1 < len(comment) and comment[pos] not in (")", "]"):
-                        pos += 1
-                        value += comment[pos]
-
-                        if comment[pos] in ("(", "["):
-                            while comment[pos] not in (")", "]"):
-                                pos += 1
-                                value += comment[pos]
-
-                            pos += 1
-                            value += comment[pos]
-
-                    acc += value
-
-                values.append(acc)
-
-            pos += 1
-
-        expect_type = values[1]
-        expected.append((expect_type, values[2:]))
+        expected.append((test_type, values))
 
     return Test(
         path.stem,
@@ -94,7 +71,7 @@ def parse_test(content: str, path: Path) -> Test:
 
 
 def read_tests() -> list[Test]:
-    path = Path.cwd() / "tests"
+    path = Path("../tests")
     tests: list[Test] = []
 
     for test_file in path.rglob("*.lite"):

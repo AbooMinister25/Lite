@@ -80,7 +80,6 @@ impl<'a> Parser<'a> {
         let mut lhs = self.prefix_rule(token)?;
 
         while precedence <= get_precedence(&self.peek().0) {
-            println!("{:?}", self.peek().0);
             lhs = self.infix_rule(lhs)?;
         }
 

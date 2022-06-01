@@ -1,22 +1,4 @@
-// expect: parse Tuple[Ident[a], Ident[b], Ident[c]]
+// expect: parse Tuple[Ident[a], Ident[b], Ident[c]] Tuple[Int[1], Int[2], Int[3]]
 
 (a, b, c)
 (1, 2, 3)
-
-
-
-
-
-
-
-
-
-
-
-10
-
-
-
-
-
-

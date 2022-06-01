@@ -1,3 +1,5 @@
+// expect: parse Block[Call[Ident[print](String[hi])]]
+
 do
-    5 + 5 * 3
+    print("hi")
 end
