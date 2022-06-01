@@ -1,5 +1,9 @@
+// expect: parse If[Bool[true] -> Block[Ident[bar]] ^ ~Bool[true] -> If[Bool[false] -> Block[Ident[baz]] ^ ~Bool[false] -> Block[Ident[ban]]]]
+
 if true do
     bar
 else if false do
     baz
+else do
+    ban
 end

@@ -63,8 +63,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    /// Parses an expression and returns the parsed node wrapped in a `Result`
-    /// indicating whether or not the parser encountered an error.
+    /// Parses an expression and returns the parsed node wrapped in a `Result`.
     ///
     /// # Examples
     ///
@@ -74,6 +73,11 @@ impl<'a> Parser<'a> {
     /// let mut parser = Parser::new("5 + 5", "main.lt");
     ///
     /// let (expr, span) = parser.parse_expression(1).unwrap();
+    /// ```
+    ///
+    /// # Errors
+    /// This functions returns a `ParserError` if any error is encountered
+    /// during parsing.
     pub fn parse_expression(&mut self, precedence: u8) -> Result<Spanned<Expr>, ParserError> {
         let token = self.advance();
 

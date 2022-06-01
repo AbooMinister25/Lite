@@ -1,0 +1,5 @@
+// expect: parse Binary[(Int[5] + Binary[(Int[5] * Int[5])])] Binary[(Int[5] + Binary[(Binary[(Int[5] * Int[3])] + Binary[(Binary[(Int[2] * Binary[(Int[3] / Int[12])])] + Unary[(-Int[10])])])])] Binary[(Binary[(Int[5] + Int[5])] * Int[5])]
+
+5 + 5 * 5
+5 + 5 * 3 + 2 * 3 / 12 + -10
+(5 + 5) * 5
