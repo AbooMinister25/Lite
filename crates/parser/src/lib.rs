@@ -19,32 +19,10 @@ use crate::ast::{
     Annotation, AnnotationKind, BinOpKind, Expr, LiteralKind, MatchArm, PatKind, Range, Statement,
     UnaryOpKind,
 };
-use crate::errors::ParserError;
+use crate::errors::{ErrorKind, ParserError};
 use ariadne::{Color, ColorGenerator, Fmt, Label, Report, ReportBuilder, ReportKind, Source};
 use lexer::{tokens::TokenKind, Lexer};
 use span::{Span, Spanned};
-
-/// Creates and emits a parser error
-///
-/// # Examples
-///
-/// ```
-/// use parser::parser_error;
-///
-/// parser_error("Unclosed string", 1..6, "\"Hello");
-/// ```
-pub fn parser_error(message: &str, span: Span, source: &str) {
-    Report::build(ReportKind::Error, (), span.start)
-        .with_message(message.to_string())
-        .with_label(
-            Label::new(span)
-                .with_message(message)
-                .with_color(Color::Fixed(11)),
-        )
-        .finish()
-        .print(Source::from(source))
-        .unwrap();
-}
 
 /// Parses a source string into an AST (Abstract Syntax Tree)
 ///
@@ -154,15 +132,19 @@ impl<'a> Parser<'a> {
         self.peeked.as_ref().unwrap()
     }
 
-    fn consume(&mut self, expected: TokenKind, message: &str) {
+    fn consume(&mut self, expected: TokenKind, message: &str) -> Result<(), ParserError> {
         let token = self.peek();
 
         if token.0 == expected {
             self.advance(); // next `Token` is the expected one, so advance
-            return;
+            return Ok(());
         }
 
-        parser_error(message, token.1, self.source);
+        Err(ParserError::new(
+            ErrorKind::Expected(vec![expected.to_string()], token.0.clone(), token.1),
+            message.to_string(),
+            None,
+        ))
     }
 
     fn maybe_newline(&mut self) {

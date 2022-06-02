@@ -76,7 +76,7 @@ impl<'a> Parser<'a> {
     /// ```
     ///
     /// # Errors
-    /// This functions returns a `ParserError` if any error is encountered
+    /// This functions returns a `ParserError` if any errors is encountered
     /// during parsing.
     pub fn parse_expression(&mut self, precedence: u8) -> Result<Spanned<Expr>, ParserError> {
         let token = self.advance();
@@ -111,7 +111,7 @@ impl<'a> Parser<'a> {
         self.consume(
             TokenKind::OpenParen,
             "Expected to find opening parenthesis `(`",
-        );
+        )?;
 
         let start = self.current_span();
 
@@ -128,7 +128,7 @@ impl<'a> Parser<'a> {
         self.consume(
             TokenKind::CloseParen,
             "Expected to find closing parenthesis `(`",
-        );
+        )?;
 
         let span = Span::from(start.start..self.current_span().end);
         Ok((args, span))
@@ -144,7 +144,7 @@ impl<'a> Parser<'a> {
         self.consume(
             TokenKind::CloseParen,
             "Expected to find closing parenthesis `)`",
-        );
+        )?;
         Ok(expr)
     }
 
@@ -165,7 +165,7 @@ impl<'a> Parser<'a> {
         self.consume(
             TokenKind::CloseParen,
             "Expected to find closing parenthesis `)`",
-        );
+        )?;
 
         let span = Span::from(start - 1..items.last().unwrap().1.end + 1); // Safe to unwrap since `items` has at least one value
         Ok((Expr::Tuple(items), span))
@@ -187,7 +187,7 @@ impl<'a> Parser<'a> {
         self.consume(
             TokenKind::CloseBracket,
             "Expected to find closing bracket `]`",
-        );
+        )?;
 
         let span = Span::from(current.1.start..self.current_span().end);
 
@@ -216,7 +216,7 @@ impl<'a> Parser<'a> {
             expressions.push(self.parse_expression(1)?);
             self.maybe_newline();
         }
-        self.consume(TokenKind::End, "Expected to find keyword `end`"); // Consume closing `end`
+        self.consume(TokenKind::End, "Expected to find keyword `end`")?; // Consume closing `end`
 
         let span = Span::from(current.1.start..self.current_span().end);
 
@@ -232,7 +232,7 @@ impl<'a> Parser<'a> {
         // Can't use `parse_expression` or `parse_block` since if expression syntax
         // has `end` at the end of the end of the entire `if/else/else if` chain and not
         // at individual blocks.
-        self.consume(TokenKind::Do, "Expected to find `do` in `if`");
+        self.consume(TokenKind::Do, "Expected to find `do` in `if`")?;
         let span_start = self.current_span().start; // Start of span for next token
         self.maybe_newline();
 
@@ -266,7 +266,7 @@ impl<'a> Parser<'a> {
                 self.parse_expression(1)? // Always a block, since next token is confirmed to be `do`
             })
         } else {
-            self.consume(TokenKind::End, "Expected to find `end` at end of block");
+            self.consume(TokenKind::End, "Expected to find `end` at end of block")?;
             None
         };
 
@@ -277,6 +277,34 @@ impl<'a> Parser<'a> {
                 condition: Box::new(condition),
                 body: Box::new(if_body),
                 else_: Box::new(else_),
+            },
+            span,
+        ))
+    }
+
+    fn parse_for(&mut self, current: Spanned<TokenKind>) -> Result<Spanned<Expr>, ParserError> {
+        let var = self.parse_expression(1)?;
+        self.consume(TokenKind::In, "Expected to find `in` in `for`")?;
+        let it = self.parse_expression(1)?;
+
+        // Don't use `consume` since we don't want to consume the next token
+        let peeked = self.peek();
+        if peeked.0 != TokenKind::Do {
+            return Err(ParserError::new(
+                ErrorKind::Expected(vec!["do".to_string()], peeked.0.clone(), self.peek().1),
+                "Expected to find `do` in `for`".to_string(),
+                None,
+            ));
+        }
+        let body = self.parse_expression(1)?; // Always a block since next token is confirmed to be `do`
+
+        let span = Span::from(current.1.start..body.1.end);
+
+        Ok((
+            Expr::For {
+                var: Box::new(var),
+                iter: Box::from(it),
+                body: Box::from(body),
             },
             span,
         ))
