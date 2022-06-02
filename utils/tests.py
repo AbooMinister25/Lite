@@ -52,7 +52,7 @@ def parse_test(content: str, path: Path) -> Test:
     expected: list[tuple[str, str]] = []
 
     for comment in comments:
-        values = comment.split(":")[1].strip()
+        values = comment.split("expect:")[1].strip()
 
         if values.startswith("parse"):
             test_type = "parse"

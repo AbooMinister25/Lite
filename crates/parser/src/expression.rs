@@ -22,6 +22,7 @@ impl<'a> Parser<'a> {
             TokenKind::OpenBracket => self.parse_array(token),
             TokenKind::Do => self.parse_block(token),
             TokenKind::If => self.parse_conditional(token),
+            TokenKind::For => self.parse_for(token),
             TokenKind::End => Err(ParserError::new(
                 ErrorKind::Unexpected(TokenKind::End, token.1),
                 "Invalid Syntax - Unexpected `end`, doesn't close anything".to_string(),

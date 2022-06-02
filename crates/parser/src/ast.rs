@@ -440,7 +440,7 @@ impl fmt::Display for Expr {
                 ),
                 Expr::For {
                     var, iter, body, ..
-                } => format!("for {} in {} do {:?} end", var.0, iter.0, body),
+                } => format!("For[var: {} iter: {} body: {}]", var.0, iter.0, body.0),
                 Expr::While { expr, body, .. } => format!("while {} do {:?} end", expr.0, body),
                 Expr::Match { expr, arms, .. } => format!("match {} with {:?}", expr.0, arms),
             }
