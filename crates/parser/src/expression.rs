@@ -23,6 +23,7 @@ impl<'a> Parser<'a> {
             TokenKind::Do => self.parse_block(token),
             TokenKind::If => self.parse_conditional(token),
             TokenKind::For => self.parse_for(token),
+            TokenKind::While => self.parse_while(token),
             TokenKind::End => Err(ParserError::new(
                 ErrorKind::Unexpected(TokenKind::End, token.1),
                 "Invalid Syntax - Unexpected `end`, doesn't close anything".to_string(),
@@ -305,6 +306,31 @@ impl<'a> Parser<'a> {
             Expr::For {
                 var: Box::new(var),
                 iter: Box::from(it),
+                body: Box::from(body),
+            },
+            span,
+        ))
+    }
+
+    fn parse_while(&mut self, current: Spanned<TokenKind>) -> Result<Spanned<Expr>, ParserError> {
+        let expr = self.parse_expression(1)?;
+
+        // Don't use `consume` since we don't want to consume the next token
+        let peeked = self.peek();
+        if peeked.0 != TokenKind::Do {
+            return Err(ParserError::new(
+                ErrorKind::Expected(vec!["do".to_string()], peeked.0.clone(), self.peek().1),
+                "Expected to find `do` in `while`".to_string(),
+                None,
+            ));
+        }
+        let body = self.parse_expression(1)?; // Always a block since next token is confirmed to be `do`
+
+        let span = Span::from(current.1.start..body.1.end);
+
+        Ok((
+            Expr::While {
+                expr: Box::new(expr),
                 body: Box::from(body),
             },
             span,
