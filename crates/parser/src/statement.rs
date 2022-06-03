@@ -1,5 +1,5 @@
 use crate::ast::{Expr, Statement};
-use crate::errors::ParserError;
+use crate::errors::{ErrorKind, ParserError};
 use crate::Parser;
 use lexer::tokens::TokenKind;
 use span::{Span, Spanned};
@@ -80,5 +80,50 @@ impl<'a> Parser<'a> {
             }),
             span,
         ))
+    }
+
+    fn parse_function(&mut self) -> Result<Spanned<Statement>, ParserError> {
+        let span = self.advance().1;
+
+        let i = match self.peek().0 {
+            TokenKind::Ident(i) => i,
+            _ => {
+                return Err(ParserError::new(
+                    ErrorKind::Expected(
+                        vec!["identifier".to_string()],
+                        self.peek().0,
+                        self.peek().1,
+                    ),
+                    format!(
+                        "Expected to find identifier, instead found {}",
+                        self.peek().0
+                    ),
+                    None,
+                ));
+            }
+        };
+
+        let foo = 10;
+    }
+
+    fn parse_function_parameters(&mut self) -> Result<Spanned<Vec<String>>, ParserError> {
+        let mut args = vec![];
+
+        self.consume(
+            TokenKind::OpenParen,
+            "Expected to find opening parenthesis `(`",
+        )?;
+
+        let start = self.current_span();
+
+        while self.peek().0 != TokenKind::CloseParen {
+            let arg = self.parse_expression(1)?;
+            args.push(arg);
+
+            // Don't use `consume` since we don't want to error if there isn't a comma
+            if self.peek().0 == TokenKind::Comma {
+                self.advance(); // Consume the comma
+            }
+        }
     }
 }
