@@ -234,7 +234,7 @@ pub enum Statement {
     ///
     /// `let [mut] <name> = <expr>`
     Let {
-        name: Spanned<String>,
+        name: Spanned<Expr>,
         value: Spanned<Expr>,
         mutable: bool,
     },

@@ -30,6 +30,7 @@ impl<'a> Parser<'a> {
         match peeked.0 {
             TokenKind::Return => self.parse_return(),
             TokenKind::Import => self.parse_import(),
+            TokenKind::Let => self.parse_let(),
             _ => self.expression_statement(),
         }
     }
@@ -55,5 +56,29 @@ impl<'a> Parser<'a> {
 
         let span = Span::from(span_start.start..expr.1.end);
         Ok((Statement::Import(expr), span))
+    }
+
+    fn parse_let(&mut self) -> Result<Spanned<Statement>, ParserError> {
+        let span_start = self.advance().1;
+        let mutable = if self.peek().0 == TokenKind::Mut {
+            self.advance();
+            true
+        } else {
+            false
+        };
+
+        let name = self.parse_expression(1)?;
+        self.consume(TokenKind::Equal, "Expected to find `=`")?;
+        let value = self.parse_expression(1)?;
+
+        let span = Span::from(span_start.start..value.1.end);
+        Ok((
+            (Statement::Let {
+                name,
+                value,
+                mutable,
+            }),
+            span,
+        ))
     }
 }
