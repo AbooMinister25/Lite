@@ -20,15 +20,16 @@ impl<'a> Parser<'a> {
     /// let mut parser = Parser::new(source, "main.lt");
     /// let (statement, span) = parser.parse_statement().expect("Parser encountered an error");
     /// ```
-    /// 
+    ///
     /// # Errors
-    /// This functions returns a `ParserError` if any errors is encountered
+    /// This functions returns a `ParserError` if any errors are encountered
     /// during parsing.
     pub fn parse_statement(&mut self) -> Result<Spanned<Statement>, ParserError> {
         let peeked = self.peek();
 
         match peeked.0 {
             TokenKind::Return => self.parse_return(),
+            TokenKind::Import => self.parse_import(),
             _ => self.expression_statement(),
         }
     }
@@ -46,5 +47,13 @@ impl<'a> Parser<'a> {
 
         let span = Span::from(span_start.start..expr.1.end);
         Ok((Statement::Return(expr), span))
+    }
+
+    fn parse_import(&mut self) -> Result<Spanned<Statement>, ParserError> {
+        let span_start = self.advance().1;
+        let expr = self.parse_expression(1)?;
+
+        let span = Span::from(span_start.start..expr.1.end);
+        Ok((Statement::Import(expr), span))
     }
 }

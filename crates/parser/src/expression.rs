@@ -78,7 +78,7 @@ impl<'a> Parser<'a> {
     /// ```
     ///
     /// # Errors
-    /// This functions returns a `ParserError` if any errors is encountered
+    /// This functions returns a `ParserError` if any errors are encountered
     /// during parsing.
     pub fn parse_expression(&mut self, precedence: u8) -> Result<Spanned<Expr>, ParserError> {
         let token = self.advance();
