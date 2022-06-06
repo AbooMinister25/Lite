@@ -30,7 +30,7 @@ use span::{Span, Spanned};
 ///
 /// ```
 /// use parser::Parser;
-///
+/// 
 /// let source = r#"
 /// func main() do
 ///     println("Hello, World")

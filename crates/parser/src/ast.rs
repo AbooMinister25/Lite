@@ -243,8 +243,7 @@ pub enum Statement {
     /// `func <name>(<args>) do <expr> end`
     Function {
         name: Spanned<String>,
-        params: Spanned<Vec<Spanned<String>>>,
-        annotations: Vec<Spanned<Annotation>>,
+        params: Spanned<Vec<(String, Annotation)>>,
         body: Spanned<Expr>,
     },
     /// A class declaration
@@ -286,7 +285,6 @@ impl fmt::Display for Statement {
                 Statement::Function {
                     name,
                     params,
-                    annotations: _,
                     body,
                 } => format!("func {}({:?}) do {}", name.0, params, body.0),
                 Statement::Class {
