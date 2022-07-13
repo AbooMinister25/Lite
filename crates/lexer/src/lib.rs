@@ -354,6 +354,8 @@ impl<'a> Lexer<'a> {
                 '-' => {
                     if self.consume('=') {
                         self.create_token(TokenKind::MinusEqual, 2)
+                    } else if self.consume('>') {
+                        self.create_token(TokenKind::Arrow, 2)
                     } else {
                         self.create_token(TokenKind::Minus, 1)
                     }

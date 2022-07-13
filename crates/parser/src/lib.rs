@@ -16,7 +16,7 @@ pub mod statement;
 
 // use crate::ast::Spanned;
 use crate::ast::{
-    Annotation, AnnotationKind, BinOpKind, Expr, LiteralKind, MatchArm, PatKind, Range, Statement,
+    Annotation, BinOpKind, Expr, LiteralKind, MatchArm, PatKind, Range, Statement,
     UnaryOpKind,
 };
 use crate::errors::{ErrorKind, ParserError};

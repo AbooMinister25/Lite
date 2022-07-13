@@ -1,4 +1,4 @@
-use crate::ast::{Expr, Statement};
+use crate::ast::{Annotation, Expr, Statement};
 use crate::errors::{ErrorKind, ParserError};
 use crate::Parser;
 use lexer::tokens::TokenKind;
@@ -84,8 +84,9 @@ impl<'a> Parser<'a> {
 
     fn parse_function(&mut self) -> Result<Spanned<Statement>, ParserError> {
         let span = self.advance().1;
+        let mut return_annotation = None;
 
-        let i = match self.peek().0 {
+        let name = match self.peek().0 {
             TokenKind::Ident(i) => i,
             _ => {
                 return Err(ParserError::new(
@@ -103,11 +104,23 @@ impl<'a> Parser<'a> {
             }
         };
 
-        let foo = 10;
+        let (parameters, annotations) = self.parse_function_parameters()?;
+
+        if self.peek().0 == TokenKind::Arrow {
+            self.advance();
+            let expr = self.parse_expression(1)?;
+
+            return_annotation = Some(self.parse_annotation_from(&expr.0)?);
+        }
+
+        // let body = self.parse_e
     }
 
-    fn parse_function_parameters(&mut self) -> Result<Spanned<Vec<String>>, ParserError> {
-        let mut args = vec![];
+    fn parse_function_parameters(
+        &mut self,
+    ) -> Result<Spanned<(Vec<String>, Vec<Spanned<Annotation>>)>, ParserError> {
+        let mut parameters = vec![];
+        let mut annotations = vec![];
 
         self.consume(
             TokenKind::OpenParen,
@@ -117,13 +130,71 @@ impl<'a> Parser<'a> {
         let start = self.current_span();
 
         while self.peek().0 != TokenKind::CloseParen {
-            let arg = self.parse_expression(1)?;
-            args.push(arg);
+            if matches!(self.peek().0, TokenKind::Ident(_)) {
+                return Err(ParserError::new(
+                    ErrorKind::Unexpected(self.peek().0, self.peek().1),
+                    "Unexpected token in function definition".to_string(),
+                    None,
+                ));
+            }
+
+            let param = self.parse_expression(1)?.0.to_string(); // Always an identifier
+            if self.peek().0 == TokenKind::Colon {
+                let annotation = self.parse_annotation()?;
+                annotations.push(annotation)
+            }
+            parameters.push(param);
 
             // Don't use `consume` since we don't want to error if there isn't a comma
             if self.peek().0 == TokenKind::Comma {
                 self.advance(); // Consume the comma
             }
+        }
+
+        Ok((
+            (parameters, annotations),
+            Span::from(start.start..self.current_span().end),
+        ))
+    }
+
+    fn parse_annotation(&mut self) -> Result<Spanned<Annotation>, ParserError> {
+        self.consume(
+            TokenKind::Colon,
+            "Expected to find colon `:` for annotation",
+        )?;
+
+        let start = self.current_span();
+        let annotation = self.parse_expression(1)?;
+
+        Ok((
+            self.parse_annotation_from(&annotation.0)?,
+            Span::from(start.start..self.current_span().end),
+        ))
+    }
+
+    fn parse_annotation_from(&mut self, expr: &Expr) -> Result<Annotation, ParserError> {
+        match expr {
+            Expr::Ident(i) => Ok(Annotation::Single(*i)),
+            Expr::Tuple(t) => Ok(Annotation::Tuple(
+                t.iter()
+                    .map(|(e, _)| self.parse_annotation_from(e))
+                    .collect::<Result<Vec<Annotation>, ParserError>>()?,
+            )),
+            Expr::Array(a) => Ok(Annotation::Array(
+                a.iter()
+                    .map(|(e, _)| self.parse_annotation_from(e))
+                    .collect::<Result<Vec<Annotation>, ParserError>>()?,
+            )),
+            e => Err(ParserError::new(
+                ErrorKind::Other(
+                    format!("Invalid annotation {e}, expected a single annotation, tuple annotation, or array annotation"),
+                    self.current_span()
+                ),
+                format!(
+                    "Invalid annotation {e}, expected a single annotation, tuple annotation, or array annotation"
+                ),
+                None
+            ))
         }
     }
 }

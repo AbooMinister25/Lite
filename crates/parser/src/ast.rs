@@ -184,35 +184,23 @@ impl fmt::Display for MatchArm {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum AnnotationKind {
+pub enum Annotation {
     Single(String),
-    Tuple(Vec<AnnotationKind>),
-    Array(Vec<AnnotationKind>),
+    Tuple(Vec<Annotation>),
+    Array(Vec<Annotation>),
 }
 
-impl fmt::Display for AnnotationKind {
+impl fmt::Display for Annotation {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
             "{}",
             match self {
-                AnnotationKind::Single(s) => s.to_string(),
-                AnnotationKind::Tuple(t) => format!("{:?}", t),
-                AnnotationKind::Array(a) => format!("{:?}", a),
+                Annotation::Single(s) => s.to_string(),
+                Annotation::Tuple(t) => format!("{:?}", t),
+                Annotation::Array(a) => format!("{:?}", a),
             }
         )
-    }
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct Annotation {
-    kind: AnnotationKind,
-    name: String,
-}
-
-impl fmt::Display for Annotation {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}: {}", self.name, self.kind)
     }
 }
 
@@ -243,7 +231,10 @@ pub enum Statement {
     /// `func <name>(<args>) do <expr> end`
     Function {
         name: Spanned<String>,
-        params: Spanned<Vec<(String, Annotation)>>,
+        public: bool,
+        params: Spanned<Vec<String>>,
+        annotations: Vec<Spanned<Annotation>>,
+        return_annotation: Option<Annotation>,
         body: Spanned<Expr>,
     },
     /// A class declaration
@@ -284,7 +275,10 @@ impl fmt::Display for Statement {
                 Statement::Let { name, value, .. } => format!("let {} = {}", name.0, value.0),
                 Statement::Function {
                     name,
+                    public,
                     params,
+                    annotations,
+                    return_annotation,
                     body,
                 } => format!("func {}({:?}) do {}", name.0, params, body.0),
                 Statement::Class {

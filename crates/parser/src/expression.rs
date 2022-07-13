@@ -1,5 +1,5 @@
 use crate::ast::{
-    Annotation, AnnotationKind, BinOpKind, Expr, LiteralKind, MatchArm, PatKind, Range, UnaryOpKind,
+    Annotation, BinOpKind, Expr, LiteralKind, MatchArm, PatKind, Range, UnaryOpKind,
 };
 use crate::errors::{ErrorKind, ParserError};
 use crate::precedence::get_precedence;
