@@ -2,7 +2,7 @@ use ariadne::ReportKind;
 use error::LiteError;
 use lexer::tokens::TokenKind;
 use span::{Span, Spanned};
-use std::fmt::Display;
+use std::{error::Error, fmt};
 
 /// Represents the different types of errors the
 /// parser might encounter
@@ -21,6 +21,7 @@ pub enum ErrorKind {
 /// This struct hold information related to an error
 /// in the parser, including its type, the error
 /// message, and an optional help message
+#[derive(Debug)]
 pub struct ParserError {
     kind: ErrorKind,
     message: String,
@@ -69,3 +70,11 @@ impl LiteError for ParserError {
         self.help.as_ref()
     }
 }
+
+impl fmt::Display for ParserError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.message())
+    }
+}
+
+impl Error for ParserError {}

@@ -68,7 +68,6 @@ pub enum TokenKind {
     With,
 
     // Misc
-    Newline,
     Error(String),
     EoF,
 }
@@ -129,7 +128,6 @@ impl fmt::Display for TokenKind {
             Self::True => write!(f, "true"),
             Self::While => write!(f, "while"),
             Self::With => write!(f, "with"),
-            Self::Newline => write!(f, "newline"),
             Self::Error(s) => write!(f, "{}", s),
             Self::EoF => write!(f, "End of File"),
         }
