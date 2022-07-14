@@ -37,6 +37,7 @@ impl<'a> Parser<'a> {
             | TokenKind::Float(_)
             | TokenKind::True
             | TokenKind::False => self.parse_literal(token),
+            TokenKind::Ident(n) => Ok((Expr::Ident(n), token.1)),
             _ => {
                 let repr = token.0.to_string();
                 Err(ParserError::new(

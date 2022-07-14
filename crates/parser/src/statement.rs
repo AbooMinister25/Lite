@@ -36,6 +36,8 @@ impl<'a> Parser<'a> {
 
     fn expression_statement(&mut self) -> StatementResult {
         let expr = self.parse_expression(1)?;
+        self.maybe_newline();
+
         let span = expr.1;
 
         Ok((Statement::Expression(expr), span))

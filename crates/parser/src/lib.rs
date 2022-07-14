@@ -88,6 +88,13 @@ impl<'a> Parser<'a> {
         let mut errors = vec![];
 
         while !self.at_end() {
+            // Can't use `self.maybe_newline` since we want to stop the loop if parser
+            // has reached the end of input.
+            if self.peek().0 == TokenKind::Newline {
+                self.advance();
+                continue;
+            }
+
             let node = self.parse_statement();
             match node {
                 Ok(n) => nodes.push(n),
@@ -137,6 +144,12 @@ impl<'a> Parser<'a> {
             None,
         ))
     }
+
+    fn maybe_newline(&mut self) {
+        if self.peek().0 == TokenKind::Newline {
+            self.advance();
+        }
+    }
 }
 
 #[cfg(test)]
@@ -146,7 +159,7 @@ mod tests {
 
     #[test]
     fn its_alive() {
-        let mut parser = Parser::new("5 + 5", "main.lt");
+        let mut parser = Parser::new("5", "main.lt");
         let (ast, errors) = parser.parse();
 
         assert!(errors.is_empty());
