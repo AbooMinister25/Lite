@@ -27,6 +27,10 @@ impl<'a> Parser<'a> {
     /// This functions returns a `ParserError` if any errors are encountered
     /// during parsing.
     pub fn parse_statement(&mut self) -> StatementResult {
+        while self.peek().0 == TokenKind::Newline {
+            self.advance();
+        }
+
         let peeked = self.peek();
 
         match peeked.0 {

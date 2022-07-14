@@ -88,13 +88,6 @@ impl<'a> Parser<'a> {
         let mut errors = vec![];
 
         while !self.at_end() {
-            // Can't use `self.maybe_newline` since we want to stop the loop if parser
-            // has reached the end of input.
-            if self.peek().0 == TokenKind::Newline {
-                self.advance();
-                continue;
-            }
-
             let node = self.parse_statement();
             match node {
                 Ok(n) => nodes.push(n),

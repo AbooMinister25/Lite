@@ -38,6 +38,7 @@ impl<'a> Parser<'a> {
             | TokenKind::True
             | TokenKind::False => self.parse_literal(token),
             TokenKind::Ident(n) => Ok((Expr::Ident(n), token.1)),
+            TokenKind::OpenParen => self.parse_grouping(),
             _ => {
                 let repr = token.0.to_string();
                 Err(ParserError::new(
@@ -62,5 +63,43 @@ impl<'a> Parser<'a> {
             },
             current.1,
         ))
+    }
+
+    fn parse_grouping(&mut self) -> ExprResult {
+        let expr = self.parse_expression(1)?;
+
+        // If next token is a comma, parse as a tuple
+        if self.peek().0 == TokenKind::Comma {
+            return self.parse_tuple(expr);
+        }
+
+        self.consume(
+            &TokenKind::CloseParen,
+            "Expected to find closing parenthesis `)`",
+        )?;
+        Ok(expr)
+    }
+
+    fn parse_tuple(&mut self, first_value: Spanned<Expr>) -> ExprResult {
+        let start = first_value.1.start;
+        let mut items = vec![first_value];
+
+        while self.peek().0 != TokenKind::CloseParen {
+            // Don't use `consume` since we don't want to error if there isn't a comma
+            if self.peek().0 == TokenKind::Comma {
+                self.advance();
+            }
+
+            let item = self.parse_expression(1)?;
+            items.push(item);
+        }
+
+        self.consume(
+            &TokenKind::CloseParen,
+            "Expected to find a closing parenthesis `)`",
+        )?;
+
+        let span = Span::from(start - 1..self.current_token_span.end);
+        Ok((Expr::Tuple(items), span))
     }
 }
