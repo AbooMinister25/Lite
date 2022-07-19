@@ -6,7 +6,7 @@ Lite is still in development, and is undergoing multiple rewrites :p
 
 Here's a taste of the eventual syntax
 
-```ocaml
+```scala
 func fib(n: int) do
     if n < 2 do
         return n
