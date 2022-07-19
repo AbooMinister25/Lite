@@ -87,6 +87,10 @@ impl<'a> Parser<'a> {
         let mut nodes = vec![];
         let mut errors = vec![];
 
+        while self.peek().0 == TokenKind::Newline {
+            self.advance();
+        }
+
         while !self.at_end() {
             let node = self.parse_statement();
             match node {
