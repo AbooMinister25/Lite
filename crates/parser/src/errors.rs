@@ -38,12 +38,22 @@ impl ParserError {
     }
 }
 
+impl ParserError {
+    pub fn with_help(self, help: String) -> Self {
+        Self {
+            kind: self.kind,
+            message: self.message,
+            help: Some(help),
+        }
+    }
+}
+
 impl LiteError for ParserError {
     fn labels(&self) -> Vec<Spanned<String>> {
         let label = match &self.kind {
             ErrorKind::Expected(expected, _, span) => {
                 let message = if expected.len() == 1 {
-                    format!("Expected to find token {}", expected[0])
+                    format!("Expected to find {}", expected[0])
                 } else {
                     format!("Expected to find one of {:?}", expected)
                 };

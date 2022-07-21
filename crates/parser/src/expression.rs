@@ -37,8 +37,10 @@ impl<'a> Parser<'a> {
             | TokenKind::Float(_)
             | TokenKind::True
             | TokenKind::False => self.parse_literal(token),
-            TokenKind::Ident(n) => Ok((Expr::Ident(n), token.1)),
+            TokenKind::Ident(n) => Ok((Expr::Ident(n), token.1)), // No need for any extra work
             TokenKind::OpenParen => self.parse_grouping(),
+            TokenKind::Minus | TokenKind::Bang => self.parse_unary(token),
+            TokenKind::OpenBracket => self.parse_array(token),
             _ => {
                 let repr = token.0.to_string();
                 Err(ParserError::new(
@@ -85,9 +87,10 @@ impl<'a> Parser<'a> {
         let mut items = vec![first_value];
 
         while self.peek().0 != TokenKind::CloseParen {
-            // Don't use `consume` since we don't want to error if there isn't a comma
-            if self.peek().0 == TokenKind::Comma {
-                self.advance();
+            // Consume a comma if we haven't reached the end of the tuple
+            if self.peek().0 != TokenKind::CloseBracket {
+                self.consume(&TokenKind::Comma, "Expected to find a comma")
+                    .map_err(|e| e.with_help("Did you forget a comma?".to_string()))?;
             }
 
             let item = self.parse_expression(1)?;
@@ -101,5 +104,42 @@ impl<'a> Parser<'a> {
 
         let span = Span::from(start - 1..self.current_token_span.end);
         Ok((Expr::Tuple(items), span))
+    }
+
+    fn parse_unary(&mut self, current: Spanned<TokenKind>) -> ExprResult {
+        // 8 is the precedence level for the `!` and `-` unary operators.
+        let expr = self.parse_expression(8)?;
+        let span = Span::from(current.1.start..expr.1.end);
+
+        Ok((
+            Expr::Unary {
+                op: current.0.to_string(),
+                rhs: Box::new(expr),
+            },
+            span,
+        ))
+    }
+
+    fn parse_array(&mut self, current: Spanned<TokenKind>) -> ExprResult {
+        let mut items = Vec::new();
+
+        while self.peek().0 != TokenKind::CloseBracket {
+            let item = self.parse_expression(1)?;
+            items.push(item);
+
+            // Consume a comma if we haven't reached the end of the array
+            if self.peek().0 != TokenKind::CloseBracket {
+                self.consume(&TokenKind::Comma, "Expected to find a comma")
+                    .map_err(|e| e.with_help("Did you forget a comma?".to_string()))?;
+            }
+        }
+
+        self.consume(
+            &TokenKind::CloseBracket,
+            "Expected to find closing bracket `]`",
+        )?;
+
+        let span = Span::from(current.1.start..self.current_token_span.end);
+        Ok((Expr::Array(items), span))
     }
 }

@@ -4,6 +4,8 @@
 
 #![warn(clippy::pedantic, clippy::nursery)]
 #![allow(clippy::must_use_candidate)]
+#![allow(clippy::unnecessary_wraps)]
+#![allow(clippy::missing_const_for_fn)]
 
 pub mod ast;
 pub mod errors;
