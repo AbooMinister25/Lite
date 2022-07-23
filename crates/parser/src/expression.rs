@@ -41,6 +41,7 @@ impl<'a> Parser<'a> {
             TokenKind::OpenParen => self.parse_grouping(),
             TokenKind::Minus | TokenKind::Bang => self.parse_unary(token),
             TokenKind::OpenBracket => self.parse_array(token),
+            TokenKind::Do => self.parse_block(token),
             _ => {
                 let repr = token.0.to_string();
                 Err(ParserError::new(
@@ -52,7 +53,7 @@ impl<'a> Parser<'a> {
         }
     }
 
-    fn parse_literal(&mut self, current: Spanned<TokenKind>) -> ExprResult {
+    fn parse_literal(&self, current: Spanned<TokenKind>) -> ExprResult {
         Ok((
             match current.0 {
                 TokenKind::Integer(i) => Expr::Literal(LiteralKind::Int(i.parse().unwrap())), // Safe to unwrap since value is confirmed to be valid integer
@@ -141,5 +142,17 @@ impl<'a> Parser<'a> {
 
         let span = Span::from(current.1.start..self.current_token_span.end);
         Ok((Expr::Array(items), span))
+    }
+
+    fn parse_block(&mut self, current: Spanned<TokenKind>) -> ExprResult {
+        let mut expressions = vec![];
+
+        while self.peek().0 != TokenKind::End {
+            expressions.push(self.parse_expression(1)?);
+        }
+
+        self.consume(&TokenKind::End, "Expected to find `end`")?;
+        let span = Span::from(current.1.start..self.current_token_span.end);
+        Ok((Expr::Block(expressions), span))
     }
 }

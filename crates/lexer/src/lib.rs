@@ -394,7 +394,7 @@ impl<'a> Lexer<'a> {
                 '\n' => {
                     self.line += 1;
                     self.column = 0;
-                    self.create_token(TokenKind::Newline, 1)
+                    self.lex_token()
                 }
                 c if c.is_whitespace() => self.lex_token(),
 
