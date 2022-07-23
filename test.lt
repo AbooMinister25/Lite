@@ -1,5 +1,7 @@
-do
-
-
+if true do
     10
+else if false do
+    30
+else do
+    40
 end

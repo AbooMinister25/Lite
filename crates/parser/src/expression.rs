@@ -42,6 +42,7 @@ impl<'a> Parser<'a> {
             TokenKind::Minus | TokenKind::Bang => self.parse_unary(token),
             TokenKind::OpenBracket => self.parse_array(token),
             TokenKind::Do => self.parse_block(token),
+            TokenKind::If => self.parse_if(token),
             _ => {
                 let repr = token.0.to_string();
                 Err(ParserError::new(
@@ -154,5 +155,62 @@ impl<'a> Parser<'a> {
         self.consume(&TokenKind::End, "Expected to find `end`")?;
         let span = Span::from(current.1.start..self.current_token_span.end);
         Ok((Expr::Block(expressions), span))
+    }
+
+    fn parse_if(&mut self, current: Spanned<TokenKind>) -> ExprResult {
+        let condition = self.parse_expression(1)?;
+
+        // Can't use `parse_expression` or `parse_block` since if expression syntax
+        // only has an `end` after the entire `if/else/else if` chain, and not at the
+        // end of individual blocks.
+        self.consume(&TokenKind::Do, "Expected to find `do` in `if`")?;
+        let span_start = self.current_token_span.start;
+
+        let mut body = vec![];
+        while !(self.peek().0 == TokenKind::Else || self.peek().0 == TokenKind::End) {
+            body.push(self.parse_expression(1)?);
+        }
+
+        let span = Span::from(span_start..self.current_token_span.end);
+        let if_body = (Expr::Block(body), span);
+
+        let else_ = if self.peek().0 == TokenKind::Else {
+            let else_position = self.advance().1; // Consume `else`
+            Some(if self.peek().0 == TokenKind::If {
+                let if_t = self.advance();
+                self.parse_if(if_t)?
+            } else {
+                // Don't use `consume` since we don't want to consume the next token
+                if self.peek().0 != TokenKind::Do {
+                    return Err(ParserError::new(
+                        ErrorKind::Expected(
+                            vec!["do".to_string()],
+                            self.peek().0.clone(),
+                            else_position,
+                        ),
+                        "Expected to find `do` after `else`".to_string(),
+                        Some("Add a `do` after `else`".to_string()),
+                    ));
+                }
+
+                self.parse_expression(1)? // Always a block, since next token is confirmed to be `do`
+            })
+        } else {
+            self.consume(
+                &TokenKind::End,
+                "Expected to find `end` at the end of block",
+            )?;
+            None
+        };
+
+        let span = Span::from(current.1.start..self.current_token_span.end);
+        Ok((
+            Expr::If {
+                condition: Box::new(condition),
+                body: Box::new(if_body),
+                else_: Box::new(else_),
+            },
+            span,
+        ))
     }
 }
