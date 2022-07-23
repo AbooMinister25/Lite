@@ -24,7 +24,11 @@ impl<'a> Parser<'a> {
     /// encountered during parsing.
     pub fn parse_expression(&mut self, precedence: u8) -> ExprResult {
         let token = self.advance();
-        let lhs = self.prefix_rule(token)?;
+        let mut lhs = self.prefix_rule(token)?;
+
+        while precedence <= get_precedence(&self.peek().0) {
+            lhs = self.infix_rule(lhs)?;
+        }
 
         Ok(lhs)
     }
@@ -51,6 +55,25 @@ impl<'a> Parser<'a> {
                     None,
                 ))
             }
+        }
+    }
+
+    fn infix_rule(&mut self, lhs: Spanned<Expr>) -> ExprResult {
+        match self.peek().0 {
+            TokenKind::Plus
+            | TokenKind::Minus
+            | TokenKind::Star
+            | TokenKind::Slash
+            | TokenKind::EqualEqual
+            | TokenKind::BangEqual
+            | TokenKind::Greater
+            | TokenKind::GreaterEqual
+            | TokenKind::Less
+            | TokenKind::LessEqual
+            | TokenKind::And
+            | TokenKind::Or => self.parse_binary(lhs),
+            TokenKind::OpenParen => self.parse_call(lhs),
+            _ => todo!(),
         }
     }
 
@@ -212,5 +235,64 @@ impl<'a> Parser<'a> {
             },
             span,
         ))
+    }
+
+    fn parse_binary(&mut self, lhs: Spanned<Expr>) -> ExprResult {
+        let op = self.advance();
+        let precedence = get_precedence(&op.0);
+
+        let rhs = self.parse_expression(precedence)?;
+        let span = Span::from(lhs.1.start..rhs.1.end);
+
+        Ok((
+            Expr::Binary {
+                op: op.0.to_string(),
+                lhs: Box::new(lhs),
+                rhs: Box::new(rhs),
+            },
+            span,
+        ))
+    }
+
+    fn parse_call(&mut self, lhs: Spanned<Expr>) -> ExprResult {
+        let args = self.parse_function_args()?;
+        let span = Span::from(lhs.1.start..args.1.end);
+
+        Ok((
+            Expr::Call {
+                callee: Box::new(lhs),
+                args: args.0,
+            },
+            span,
+        ))
+    }
+
+    fn parse_function_args(&mut self) -> Result<Spanned<Vec<Spanned<Expr>>>, ParserError> {
+        let mut args = Vec::new();
+        self.consume(
+            &TokenKind::OpenParen,
+            "Expected to find opening parenthesis `(`",
+        )?;
+
+        let start = self.current_token_span.start;
+
+        while self.peek().0 != TokenKind::CloseParen {
+            let arg = self.parse_expression(1)?;
+            args.push(arg);
+
+            // Consume a comma if we haven't reached the end of the argument list
+            if self.peek().0 != TokenKind::CloseParen {
+                self.consume(&TokenKind::Comma, "Expected to find a comma")
+                    .map_err(|e| e.with_help("Did you forget a comma?".to_string()))?;
+            }
+        }
+
+        self.consume(
+            &TokenKind::CloseParen,
+            "Expected to find closing parenthesis `(`",
+        )?;
+
+        let span = Span::from(start..self.current_token_span.end);
+        Ok((args, span))
     }
 }
