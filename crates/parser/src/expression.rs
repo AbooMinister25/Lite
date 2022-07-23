@@ -190,7 +190,7 @@ impl<'a> Parser<'a> {
         let span_start = self.current_token_span.start;
 
         let mut body = vec![];
-        while !(self.peek().0 == TokenKind::Else || self.peek().0 == TokenKind::End) {
+        while !(self.at_end() || self.peek().0 == TokenKind::Else || self.peek().0 == TokenKind::End) {
             body.push(self.parse_expression(1)?);
         }
 

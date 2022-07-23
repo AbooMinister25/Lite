@@ -1,0 +1,4 @@
+if foo do
+    bar()
+    5
+    20
