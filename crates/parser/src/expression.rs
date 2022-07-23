@@ -171,7 +171,7 @@ impl<'a> Parser<'a> {
     fn parse_block(&mut self, current: Spanned<TokenKind>) -> ExprResult {
         let mut expressions = vec![];
 
-        while self.peek().0 != TokenKind::End {
+        while !self.at_end() && self.peek().0 != TokenKind::End {
             expressions.push(self.parse_expression(1)?);
         }
 
@@ -190,7 +190,10 @@ impl<'a> Parser<'a> {
         let span_start = self.current_token_span.start;
 
         let mut body = vec![];
-        while !(self.at_end() || self.peek().0 == TokenKind::Else || self.peek().0 == TokenKind::End) {
+        while !(self.at_end()
+            || self.peek().0 == TokenKind::Else
+            || self.peek().0 == TokenKind::End)
+        {
             body.push(self.parse_expression(1)?);
         }
 
