@@ -47,6 +47,18 @@ impl<'a> Parser<'a> {
             TokenKind::OpenBracket => self.parse_array(token),
             TokenKind::Do => self.parse_block(token),
             TokenKind::If => self.parse_if(token),
+            TokenKind::For => self.parse_for(token),
+            TokenKind::While => self.parse_while(token),
+            TokenKind::End => Err(ParserError::new(
+                ErrorKind::Unexpected(TokenKind::End, token.1),
+                "Invalid Syntax - Unexpected `end`, doesn't close anything".to_string(),
+                Some("Remove this `end`".to_string()),
+            )),
+            TokenKind::Else => Err(ParserError::new(
+                ErrorKind::Unexpected(TokenKind::Else, token.1),
+                "Invalid Syntax - Unexpected `Else`, not a part of any if expression".to_string(),
+                Some("Remove this `else`".to_string()),
+            )),
             _ => {
                 let repr = token.0.to_string();
                 Err(ParserError::new(
@@ -73,6 +85,11 @@ impl<'a> Parser<'a> {
             | TokenKind::And
             | TokenKind::Or => self.parse_binary(lhs),
             TokenKind::OpenParen => self.parse_call(lhs),
+            TokenKind::Equal
+            | TokenKind::PlusEqual
+            | TokenKind::MinusEqual
+            | TokenKind::SlashEqual
+            | TokenKind::StarEqual => self.parse_assignment(lhs),
             _ => todo!(),
         }
     }
@@ -240,6 +257,61 @@ impl<'a> Parser<'a> {
         ))
     }
 
+    fn parse_for(&mut self, current: Spanned<TokenKind>) -> ExprResult {
+        let var = self.parse_expression(1)?;
+        self.consume(&TokenKind::In, "Expected to find `in` in `for")?;
+        let it = self.parse_expression(1)?;
+
+        // Don't use `consume` since we don't want to consume the next token
+        let peeked = self.peek();
+        if peeked.0 != TokenKind::Do {
+            return Err(ParserError::new(
+                ErrorKind::Expected(vec!["do".to_string()], peeked.0.clone(), self.peek().1),
+                "Expected to find `do` in `for`".to_string(),
+                None,
+            ));
+        }
+
+        // Always a block, since next token is confirmed to be `do`
+        let body = self.parse_expression(1)?;
+        let span = Span::from(current.1.start..body.1.end);
+
+        Ok((
+            Expr::For {
+                var: Box::new(var),
+                iter: Box::new(it),
+                body: Box::new(body),
+            },
+            span,
+        ))
+    }
+
+    fn parse_while(&mut self, current: Spanned<TokenKind>) -> ExprResult {
+        let expr = self.parse_expression(1)?;
+
+        // Don't use `consume` since we don't want to consume the next token
+        let peeked = self.peek();
+        if peeked.0 != TokenKind::Do {
+            return Err(ParserError::new(
+                ErrorKind::Expected(vec!["do".to_string()], peeked.0.clone(), self.peek().1),
+                "Expected to find `do` in `while`".to_string(),
+                None,
+            ));
+        }
+
+        // Always a block, since next token is confirmed to be `do`
+        let body = self.parse_expression(1)?;
+        let span = Span::from(current.1.start..body.1.end);
+
+        Ok((
+            Expr::While {
+                expr: Box::new(expr),
+                body: Box::from(body),
+            },
+            span,
+        ))
+    }
+
     fn parse_binary(&mut self, lhs: Spanned<Expr>) -> ExprResult {
         let op = self.advance();
         let precedence = get_precedence(&op.0);
@@ -297,5 +369,20 @@ impl<'a> Parser<'a> {
 
         let span = Span::from(start..self.current_token_span.end);
         Ok((args, span))
+    }
+
+    fn parse_assignment(&mut self, lhs: Spanned<Expr>) -> ExprResult {
+        let op = self.advance().0.to_string();
+        let value = self.parse_expression(1)?;
+        let span = Span::from(lhs.1.start..value.1.end);
+
+        Ok((
+            Expr::Assignment {
+                name: Box::new(lhs),
+                op,
+                value: Box::new(value),
+            },
+            span,
+        ))
     }
 }
