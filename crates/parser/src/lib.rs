@@ -93,7 +93,10 @@ impl<'a> Parser<'a> {
             let node = self.parse_statement();
             match node {
                 Ok(n) => nodes.push(n),
-                Err(e) => errors.push(e),
+                Err(e) => {
+                    errors.push(e);
+                    self.synchronize();
+                }
             };
         }
 
@@ -138,6 +141,20 @@ impl<'a> Parser<'a> {
             message.to_string(),
             None,
         ))
+    }
+
+    fn synchronize(&mut self) {
+        while self.peek().0 != TokenKind::EoF {
+            match self.peek().0 {
+                TokenKind::Class
+                | TokenKind::Func
+                | TokenKind::Let
+                | TokenKind::Return
+                | TokenKind::Import
+                | TokenKind::Trait => break,
+                _ => self.advance(),
+            };
+        }
     }
 }
 
