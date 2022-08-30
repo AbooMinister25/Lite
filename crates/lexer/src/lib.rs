@@ -14,98 +14,30 @@ use crate::tokens::TokenKind;
 use span::{Span, Spanned};
 use unicode_xid::UnicodeXID;
 
-// type Spanned<T> = (T, std::ops::Range<usize>);
-
-fn get_keyword(value: &str, keyword: &str, length: usize, token: TokenKind) -> TokenKind {
-    if value[length..] == keyword[length..] {
-        token
-    } else {
-        TokenKind::Ident(value.to_string())
-    }
-}
-
-fn ident_type(value: &str) -> TokenKind {
-    match &value[..1] {
-        "a" => get_keyword(value, "and", 1, TokenKind::And),
-        "c" => get_keyword(value, "class", 1, TokenKind::Class),
-        "d" => get_keyword(value, "do", 1, TokenKind::Do),
-        "e" => {
-            if value.len() < 2 {
-                return TokenKind::Ident(value.to_string());
-            }
-
-            match &value[1..2] {
-                "l" => get_keyword(value, "else", 2, TokenKind::Else),
-                "n" => get_keyword(value, "end", 2, TokenKind::End),
-                _ => TokenKind::Ident(value.to_string()),
-            }
-        }
-        "f" => {
-            if value.len() < 2 {
-                return TokenKind::Ident(value.to_string());
-            }
-
-            match &value[1..2] {
-                "a" => get_keyword(value, "false", 2, TokenKind::False),
-                "o" => get_keyword(value, "for", 2, TokenKind::For),
-                "u" => get_keyword(value, "func", 2, TokenKind::Func),
-                _ => TokenKind::Ident(value.to_string()),
-            }
-        }
-        "i" => {
-            if value.len() < 2 {
-                return TokenKind::Ident(value.to_string());
-            }
-
-            match &value[1..2] {
-                "f" => TokenKind::If,
-                "m" => get_keyword(value, "import", 2, TokenKind::Import),
-                "n" => TokenKind::In,
-                _ => TokenKind::Ident(value.to_string()),
-            }
-        }
-        "l" => get_keyword(value, "let", 1, TokenKind::Let),
-        "m" => {
-            if value.len() < 2 {
-                return TokenKind::Ident(value.to_string());
-            }
-
-            match &value[1..2] {
-                "a" => get_keyword(value, "match", 2, TokenKind::Match),
-                "u" => get_keyword(value, "mut", 2, TokenKind::Mut),
-                _ => TokenKind::Ident(value.to_string()),
-            }
-        }
-        "n" => get_keyword(value, "new", 1, TokenKind::New),
-        "o" => get_keyword(value, "or", 1, TokenKind::Or),
-        "r" => get_keyword(value, "return", 1, TokenKind::Return),
-        "t" => {
-            if value.len() < 3 {
-                return TokenKind::Ident(value.to_string());
-            }
-
-            if &value[1..2] != "r" {
-                return TokenKind::Ident(value.to_string());
-            }
-
-            match &value[2..3] {
-                "u" => get_keyword(value, "true", 3, TokenKind::True),
-                "a" => get_keyword(value, "trait", 3, TokenKind::Trait),
-                _ => TokenKind::Ident(value.to_string()),
-            }
-        }
-        "w" => {
-            if value.len() < 2 {
-                return TokenKind::Ident(value.to_string());
-            }
-
-            match &value[1..2] {
-                "h" => get_keyword(value, "While", 2, TokenKind::While),
-                "i" => get_keyword(value, "With", 2, TokenKind::With),
-                _ => TokenKind::Ident(value.to_string()),
-            }
-        }
-        _ => TokenKind::Ident(value.to_string()),
+fn get_keyword(name: &str) -> TokenKind {
+    match name {
+        "and" => TokenKind::And,
+        "class" => TokenKind::Class,
+        "do" => TokenKind::Do,
+        "else" => TokenKind::Else,
+        "end" => TokenKind::End,
+        "false" => TokenKind::False,
+        "for" => TokenKind::For,
+        "func" => TokenKind::Func,
+        "if" => TokenKind::If,
+        "in" => TokenKind::In,
+        "import" => TokenKind::Import,
+        "let" => TokenKind::Let,
+        "match" => TokenKind::Match,
+        "mut" => TokenKind::Mut,
+        "new" => TokenKind::New,
+        "or" => TokenKind::Or,
+        "return" => TokenKind::Return,
+        "trait" => TokenKind::Trait,
+        "true" => TokenKind::True,
+        "while" => TokenKind::While,
+        "with" => TokenKind::With,
+        _ => TokenKind::Ident(name.to_string()),
     }
 }
 
@@ -296,7 +228,7 @@ impl<'a> Lexer<'a> {
             value.push(self.advance().unwrap());
         }
 
-        let token_type = ident_type(&value); // Check whether token is a Lite keyword
+        let token_type = get_keyword(&value); // Check whether token is a Lite keyword
         self.create_token(token_type, value.len())
     }
 
