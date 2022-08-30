@@ -146,8 +146,7 @@ impl<'a> Parser<'a> {
     fn synchronize(&mut self) {
         while self.peek().0 != TokenKind::EoF {
             match self.peek().0 {
-                TokenKind::Class
-                | TokenKind::Func
+                TokenKind::Func
                 | TokenKind::Let
                 | TokenKind::Return
                 | TokenKind::Import

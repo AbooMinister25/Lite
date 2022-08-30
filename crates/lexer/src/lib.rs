@@ -17,7 +17,6 @@ use unicode_xid::UnicodeXID;
 fn get_keyword(name: &str) -> TokenKind {
     match name {
         "and" => TokenKind::And,
-        "class" => TokenKind::Class,
         "do" => TokenKind::Do,
         "else" => TokenKind::Else,
         "end" => TokenKind::End,
@@ -35,8 +34,8 @@ fn get_keyword(name: &str) -> TokenKind {
         "return" => TokenKind::Return,
         "trait" => TokenKind::Trait,
         "true" => TokenKind::True,
+        "type" => TokenKind::Type,
         "while" => TokenKind::While,
-        "with" => TokenKind::With,
         _ => TokenKind::Ident(name.to_string()),
     }
 }
