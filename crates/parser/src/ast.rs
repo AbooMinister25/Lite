@@ -74,18 +74,18 @@ impl fmt::Display for BinOpKind {
             f,
             "{}",
             match self {
-                BinOpKind::Add => "+",
-                BinOpKind::Sub => "-",
-                BinOpKind::Mul => "*",
-                BinOpKind::Div => "/",
-                BinOpKind::And => "and",
-                BinOpKind::Or => "or",
-                BinOpKind::Eq => "==",
-                BinOpKind::Ne => "!=",
-                BinOpKind::Gt => ">",
-                BinOpKind::Ge => ">=",
-                BinOpKind::Lt => "<",
-                BinOpKind::Le => "<=",
+                Self::Add => "+",
+                Self::Sub => "-",
+                Self::Mul => "*",
+                Self::Div => "/",
+                Self::And => "and",
+                Self::Or => "or",
+                Self::Eq => "==",
+                Self::Ne => "!=",
+                Self::Gt => ">",
+                Self::Ge => ">=",
+                Self::Lt => "<",
+                Self::Le => "<=",
             }
         )
     }
@@ -106,8 +106,8 @@ impl fmt::Display for UnaryOpKind {
             f,
             "{}",
             match self {
-                UnaryOpKind::Not => "!",
-                UnaryOpKind::Neg => "-",
+                Self::Not => "!",
+                Self::Neg => "-",
             }
         )
     }
@@ -154,13 +154,13 @@ impl fmt::Display for PatKind {
             f,
             "{}",
             match self {
-                PatKind::Wild => "_".to_string(),
-                PatKind::Ident(i) => i.to_string(),
-                PatKind::Literal(l) => l.to_string(),
-                PatKind::Or(o) => format!("{:?}", o),
-                PatKind::Range(r) => r.to_string(),
-                PatKind::Tuple(t) => format!("{:?}", t),
-                PatKind::Rest => "..".to_string(),
+                Self::Wild => "_".to_string(),
+                Self::Ident(i) => i.to_string(),
+                Self::Literal(l) => l.to_string(),
+                Self::Or(o) => format!("{:?}", o),
+                Self::Range(r) => r.to_string(),
+                Self::Tuple(t) => format!("{:?}", t),
+                Self::Rest => "..".to_string(),
             }
         )
     }
