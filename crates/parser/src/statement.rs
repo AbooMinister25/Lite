@@ -25,7 +25,7 @@ impl<'a> Parser<'a> {
     ///
     /// # Errors
     /// This functions returns a `ParserError` if any errors are encountered
-    /// during parsing.
+    /// during parsing. 
     pub fn parse_statement(&mut self) -> StatementResult {
         let peeked = self.peek();
 

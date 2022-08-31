@@ -1,0 +1,8 @@
+if true do
+    println("hi")
+else 10
+end
+
+if true do
+    10
+end
