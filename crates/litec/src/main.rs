@@ -4,6 +4,7 @@
 use clap::{AppSettings, Parser as ArgParser};
 use error::Reporter;
 use lexer::{tokens::TokenKind, Lexer};
+use parser::print_ast::print_ast as pretty_ast;
 use parser::Parser;
 use std::{fs::File, io::Read, path::Path};
 
@@ -59,9 +60,7 @@ fn run_string(source: &str, filename: &str, print_tokens: bool, print_ast: bool)
     reporter.add_reports(errors);
 
     if print_ast {
-        for node in ast {
-            println!("{}", node.0);
-        }
+        pretty_ast(ast);
     }
 
     reporter.report().expect("Error while reporting errors");

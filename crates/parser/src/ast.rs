@@ -29,11 +29,11 @@ impl fmt::Display for LiteralKind {
             f,
             "{}",
             match self {
-                LiteralKind::Int(i) => format!("Int[{}]", i),
-                LiteralKind::Float(f) => format!("Float[{}]", f),
-                LiteralKind::Bool(b) => format!("Bool[{}]", b),
-                LiteralKind::String(s) => format!("String[{}]", s),
-                LiteralKind::Char(c) => format!("Char[{}]", c),
+                LiteralKind::Int(i) => format!("(Int {})", i),
+                LiteralKind::Float(f) => format!("(Float {})", f),
+                LiteralKind::Bool(b) => format!("(Bool {})", b),
+                LiteralKind::String(s) => format!("(String {})", s),
+                LiteralKind::Char(c) => format!("(Char {})", c),
             }
         )
     }
@@ -264,14 +264,14 @@ impl fmt::Display for Statement {
             f,
             "{}",
             match self {
-                Statement::Expression(e) => e.0.to_string(),
-                Statement::Return(e) => format!("return {}", e.0),
-                Statement::Import(e) => format!("import {}", e.0),
+                Statement::Expression(e) => format!("(Expression\n  {}\n)", e.0),
+                Statement::Return(e) => format!("(Return {})", e.0),
+                Statement::Import(e) => format!("(Import {})", e.0),
                 Statement::Let {
                     name,
                     value,
                     mutable,
-                } if *mutable => format!("let mut {} = {}", name.0, value.0),
+                } if *mutable => format!("Let(\n    name {}\n    mutable {}\n    value {}\n)", name.0, mutable, value.0),
                 Statement::Let { name, value, .. } => format!("let {} = {}", name.0, value.0),
                 Statement::Function {
                     name,
@@ -380,25 +380,25 @@ impl fmt::Display for Expr {
             "{}",
             match self {
                 Expr::Literal(e) => e.to_string(),
-                Expr::Ident(i) => format!("Ident[{}]", i),
+                Expr::Ident(i) => format!("(Ident {})", i),
                 Expr::Tuple(v) => format!(
-                    "Tuple[{}]",
+                    "(Tuple {})",
                     v.iter()
                         .map(|i| i.0.to_string())
                         .collect::<Vec<String>>()
                         .join(", ")
                 ),
                 Expr::Array(v) => format!(
-                    "Array[{}]",
+                    "(Array {})",
                     v.iter()
                         .map(|i| i.0.to_string())
                         .collect::<Vec<String>>()
                         .join(", ")
                 ),
-                Expr::Unary { op, rhs } => format!("Unary[({}{})]", op, rhs.0),
-                Expr::Binary { op, lhs, rhs } => format!("Binary[({} {} {})]", lhs.0, op, rhs.0),
+                Expr::Unary { op, rhs } => format!("(Unary ({}{}))", op, rhs.0),
+                Expr::Binary { op, lhs, rhs } => format!("(Binary ({} {} {}))", lhs.0, op, rhs.0),
                 Expr::Call { callee, args } => format!(
-                    "Call[{}({})]",
+                    "(Call {}({}) )",
                     callee.0,
                     args.iter()
                         .map(|i| i.0.to_string())
@@ -406,9 +406,9 @@ impl fmt::Display for Expr {
                         .join(", ")
                 ),
                 Expr::Assignment { name, op, value } =>
-                    format!("Assignment[{} {} {}]", name.0, op, value.0),
+                    format!("(Assignment {} {} {})", name.0, op, value.0),
                 Expr::Block(c) => format!(
-                    "Block[{}]",
+                    "(Block {})",
                     c.iter()
                         .map(|i| i.0.to_string())
                         .collect::<Vec<String>>()
@@ -418,7 +418,8 @@ impl fmt::Display for Expr {
                     condition,
                     body,
                     else_,
-                } if else_.is_none() => format!("If[{} -> {}]", condition.0, body.0),
+                } if else_.is_none() =>
+                    format!("(If\n  condition {}\n  body {}\n)", condition.0, body.0),
                 Expr::If {
                     condition,
                     body,
@@ -430,9 +431,8 @@ impl fmt::Display for Expr {
                     condition.0,
                     else_.clone().unwrap().0
                 ),
-                Expr::For {
-                    var, iter, body, ..
-                } => format!("For[var: {} iter: {} body: {}]", var.0, iter.0, body.0),
+                Expr::For { var, iter, body } =>
+                    format!("For[var: {} iter: {} body: {}]", var.0, iter.0, body.0),
                 Expr::While { expr, body } => format!("While[expr: {} body: {}]", expr.0, body.0),
                 Expr::Match { expr, arms } => format!("match {} with {:?}", expr.0, arms),
             }

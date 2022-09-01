@@ -11,6 +11,7 @@ pub mod ast;
 pub mod errors;
 pub mod expression;
 pub mod precedence;
+pub mod print_ast;
 pub mod statement;
 
 use crate::ast::Statement;
