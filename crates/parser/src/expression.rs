@@ -189,7 +189,7 @@ impl<'a> Parser<'a> {
         let mut expressions = vec![];
 
         while !self.at_end() && self.peek().0 != TokenKind::End {
-            expressions.push(self.parse_expression(1)?);
+            expressions.push(self.parse_statement()?);
         }
 
         self.consume(&TokenKind::End, "Expected to find `end`")?;
@@ -211,7 +211,7 @@ impl<'a> Parser<'a> {
             || self.peek().0 == TokenKind::Else
             || self.peek().0 == TokenKind::End)
         {
-            body.push(self.parse_expression(1)?);
+            body.push(self.parse_statement()?);
         }
 
         let span = Span::from(span_start..self.current_token_span.end);

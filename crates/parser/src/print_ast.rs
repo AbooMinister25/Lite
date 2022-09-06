@@ -39,7 +39,7 @@ fn pretty_expr(expr: Expr, pad: usize) -> String {
         Expr::Block(c) => {
             let expr_reprs = c
                 .iter()
-                .map(|e| pretty_expr(e.0.clone(), pad + 2))
+                .map(|e| pretty_statement(e.0.clone(), pad + 2))
                 .collect::<Vec<String>>();
 
             format!("(Block \n{})", expr_reprs.join("\n"))
@@ -168,7 +168,7 @@ fn pretty_statement(stmt: Statement, pad: usize) -> String {
                 name_repr, public_repr, params_repr, annotations_repr, return_repr, body_repr
             )
         }
-        _ => todo!(),
+        _ => todo!()
     };
 
     ret

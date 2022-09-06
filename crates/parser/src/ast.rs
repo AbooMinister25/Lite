@@ -340,7 +340,7 @@ pub enum Expr {
     /// A block
     ///
     /// `do <code> end`
-    Block(Vec<Spanned<Expr>>),
+    Block(Vec<Spanned<Statement>>),
     /// An `if` expression
     ///
     /// `if <expr> do <code> else <code> end`
