@@ -1,1 +1,5 @@
-let x = 10
+func foo(a: int, b: int) do
+    if true do
+        10
+    end
+end

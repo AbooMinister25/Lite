@@ -32,7 +32,8 @@ impl<'a> Parser<'a> {
 
         match peeked.0 {
             TokenKind::Let => self.parse_let(),
-            TokenKind::Func => self.parse_function(),
+            TokenKind::Func => self.parse_function(false),
+            TokenKind::Pub => self.parse_function(true),
             _ => self.expression_statement(),
         }
     }
@@ -70,10 +71,14 @@ impl<'a> Parser<'a> {
         ))
     }
 
-    fn parse_function(&mut self) -> StatementResult {
-        let span_start = self.advance().1;
-
-        // TODO: Implement public visibility modifier in lexer and here
+    fn parse_function(&mut self, public: bool) -> StatementResult {
+        let span_start = if public {
+            let s = self.advance().1;
+            self.advance(); // Consume `func`
+            s
+        } else {
+            self.advance().1
+        };
 
         // Set the precedence level high because we don't want to parse anything beyond an ident
         // TODO: Parse a pattern here instead once patterns are implemented.
@@ -102,7 +107,7 @@ impl<'a> Parser<'a> {
         Ok((
             Statement::Function {
                 name,
-                public: false,
+                public,
                 params: parameters,
                 annotations,
                 return_annotation,
