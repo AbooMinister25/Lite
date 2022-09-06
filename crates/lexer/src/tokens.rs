@@ -46,7 +46,6 @@ pub enum TokenKind {
 
     // Keywords
     And,
-    Class,
     Do,
     Else,
     End,
@@ -61,14 +60,14 @@ pub enum TokenKind {
     Mut,
     New,
     Or,
+    Pub,
     Return,
     Trait,
     True,
+    Type,
     While,
-    With,
 
     // Misc
-    Newline,
     Error(String),
     EoF,
 }
@@ -109,7 +108,6 @@ impl fmt::Display for TokenKind {
             Self::Float(fl) => write!(f, "float({fl})"),
             Self::Ident(i) => write!(f, "ident({i})"),
             Self::And => write!(f, "and"),
-            Self::Class => write!(f, "class"),
             Self::Do => write!(f, "do"),
             Self::Else => write!(f, "else"),
             Self::End => write!(f, "end"),
@@ -124,12 +122,12 @@ impl fmt::Display for TokenKind {
             Self::Mut => write!(f, "mut"),
             Self::New => write!(f, "new"),
             Self::Or => write!(f, "or"),
+            Self::Pub => write!(f, "pub"),
             Self::Return => write!(f, "return"),
             Self::Trait => write!(f, "trait"),
             Self::True => write!(f, "true"),
+            Self::Type => write!(f, "type"),
             Self::While => write!(f, "while"),
-            Self::With => write!(f, "with"),
-            Self::Newline => write!(f, "newline"),
             Self::Error(s) => write!(f, "{}", s),
             Self::EoF => write!(f, "End of File"),
         }
