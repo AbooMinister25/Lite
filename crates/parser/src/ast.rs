@@ -230,11 +230,11 @@ pub enum Statement {
     ///
     /// `func <name>(<args>) do <expr> end`
     Function {
-        name: Spanned<String>,
+        name: Spanned<Expr>,
         public: bool,
-        params: Spanned<Vec<String>>,
+        params: Vec<String>,
         annotations: Vec<Spanned<Annotation>>,
-        return_annotation: Option<Annotation>,
+        return_annotation: Option<Spanned<Annotation>>,
         body: Spanned<Expr>,
     },
     /// A class declaration

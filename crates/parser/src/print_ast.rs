@@ -129,6 +129,45 @@ fn pretty_statement(stmt: Statement, pad: usize) -> String {
                 value
             )
         }
+        Statement::Function {
+            name,
+            public,
+            params,
+            annotations,
+            return_annotation,
+            body,
+        } => {
+            let mut name_repr = pad_string("name ", pad + 2);
+            name_repr.push_str(&pretty_expr(name.0, 0));
+            let public_repr = pad_string(&format!("public {public}"), pad + 2);
+            let params_repr = pad_string(&format!("params ({})", params.join(", ")), pad + 2);
+
+            let pretty_annotations = annotations
+                .iter()
+                .map(|i| i.0.to_string())
+                .collect::<Vec<String>>()
+                .join(", ");
+            let annotations_repr =
+                pad_string(&format!("annotations ({pretty_annotations})"), pad + 2);
+
+            let pretty_return = if let Some((annotation, _)) = return_annotation {
+                annotation.to_string()
+            } else {
+                "()".to_string()
+            };
+            let return_repr = pad_string(&format!("return_annotation {pretty_return}"), pad + 2);
+
+            let body_repr = format!(
+                "{} (\n{})",
+                pad_string("body", pad + 2),
+                pretty_expr(body.0, pad + 4),
+            );
+
+            format!(
+                "(Func\n{}\n{}\n{}\n{}\n{}\n{})",
+                name_repr, public_repr, params_repr, annotations_repr, return_repr, body_repr
+            )
+        }
         _ => todo!(),
     };
 

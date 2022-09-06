@@ -1,11 +1,3 @@
-if true do
+func foo(a: int, b: int) do
     10
-else if false do
-    20
-else if false do
-    40
-else if true do
-    50
-else do
-    30    
 end
