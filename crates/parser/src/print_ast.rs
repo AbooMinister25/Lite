@@ -39,10 +39,10 @@ fn pretty_expr(expr: Expr, pad: usize) -> String {
         Expr::Block(c) => {
             let expr_reprs = c
                 .iter()
-                .map(|e| pretty_statement(e.0.clone(), pad + 2))
+                .map(|e| pretty_statement(e.0.clone(), pad + 4))
                 .collect::<Vec<String>>();
 
-            format!("(Block \n{})", expr_reprs.join("\n"))
+            format!("(Block \n{})", pad_string(&expr_reprs.join("\n"), pad + 4))
         }
         Expr::If {
             condition,
