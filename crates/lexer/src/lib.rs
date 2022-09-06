@@ -31,6 +31,7 @@ fn get_keyword(name: &str) -> TokenKind {
         "mut" => TokenKind::Mut,
         "new" => TokenKind::New,
         "or" => TokenKind::Or,
+        "pub" => TokenKind::Pub,
         "return" => TokenKind::Return,
         "trait" => TokenKind::Trait,
         "true" => TokenKind::True,

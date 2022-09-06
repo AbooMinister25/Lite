@@ -114,7 +114,7 @@ fn pretty_statement(stmt: Statement, pad: usize) -> String {
             name,
             value,
             mutable,
-        } if mutable => {
+        } => {
             let name = pretty_expr(name.0, 0);
             let value = pretty_expr(value.0, 0);
             let mutable = pad_string(&mutable.to_string(), 0);
@@ -168,7 +168,7 @@ fn pretty_statement(stmt: Statement, pad: usize) -> String {
                 name_repr, public_repr, params_repr, annotations_repr, return_repr, body_repr
             )
         }
-        _ => todo!()
+        _ => todo!(),
     };
 
     ret
