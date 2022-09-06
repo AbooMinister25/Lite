@@ -32,6 +32,7 @@ impl<'a> Parser<'a> {
 
         match peeked.0 {
             TokenKind::Return => self.parse_return(),
+            TokenKind::Import => self.parse_import(),
             TokenKind::Let => self.parse_let(),
             TokenKind::Func => self.parse_function(false),
             TokenKind::Pub => self.parse_function(true),
@@ -52,6 +53,14 @@ impl<'a> Parser<'a> {
         let span = Span::from(span_start.start..expr.1.end);
 
         Ok((Statement::Return(expr), span))
+    }
+
+    fn parse_import(&mut self) -> StatementResult {
+        let span_start = self.advance().1;
+        let expr = self.parse_expression(1)?;
+        let span = Span::from(span_start.start..expr.1.end);
+
+        Ok((Statement::Import(expr), span))
     }
 
     fn parse_let(&mut self) -> StatementResult {

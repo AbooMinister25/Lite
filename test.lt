@@ -1,3 +1,0 @@
-func foo(a: int, b: int) do
-    return 10
-end
