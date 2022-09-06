@@ -1,5 +1,3 @@
 func foo(a: int, b: int) do
-    if true do
-        10
-    end
+    return 10
 end
