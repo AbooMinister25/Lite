@@ -4,7 +4,7 @@ Note: This overview is very incomplete, and leaves out a lot of features whose s
 
 ## Hello World
 
-```ocaml
+```scala
 func main() do
     println("Hello World!")
 end
@@ -12,7 +12,7 @@ end
 
 ## Variables
 
-```ocaml
+```scala
 func main() do
     let foo = 10
     println(foo)
@@ -21,7 +21,7 @@ end
 
 Lite _infers_ types of variables, so you don't have to provide explicit type annotations everywhere. By default, variables are immutable, but you can declare them as mutable with the `mut` keyword.
 
-```ocaml
+```scala
 func main() do
     let mut foo = 10
     foo = 20
@@ -31,7 +31,7 @@ end
 
 Lite also has _arrays_, which are hold a bunch of values, each of which have to be of the same type.
 
-```ocaml
+```scala
 func main() do
     let numbers = [1, 2, 3, 4, 5]
     println(numbers)
@@ -40,7 +40,7 @@ end
 
 Lite also has _tuples_, which are collections of values which can be of different types.
 
-```ocaml
+```scala
 func main() do
     let points = (10, -4)
 end
@@ -56,7 +56,7 @@ Lite has all the expected logical operators, alongside the negation `!` and nega
 
 ### If Expressions
 
-```ocaml
+```scala
 if 5 == 5 do
     println("All is right with the world")
 else do
@@ -66,7 +66,7 @@ end
 
 Conditionals in Lite are much like what you'd see in other languages. One difference with languages like Python or Java is that conditionals in Lite, alongside many other language constructs, are _expressions_, and can evaluate to a value. Hence why they'd be called if _expressions_ instead of if _statements_. `if` will evaluate to the value of the last expression in whatever branch of the conditional is accepted. Here's an example.
 
-```ocaml
+```scala
 func main() do
     let foo = 10;
 
@@ -86,7 +86,7 @@ All branches in an if expression must evaluate to the same data type.
 
 `for` loops in Lite are more like for loops in Python or Rust as opposed to C or Java.
 
-```ocaml
+```scala
 func main() do
     for i in 1..10 do
         println(i)
@@ -98,7 +98,7 @@ end
 
 Lite loops are pretty much what you'd see in any other imperative language.
 
-```ocaml
+```scala
 while 1 == 1 do
     println("all is right with the world")
 end
@@ -108,7 +108,7 @@ end
 
 You can create functions in Lite using the `func` keyword.
 
-```ocaml
+```scala
 func add(a: Int, b: Int) -> Int do
     a + b
 end
@@ -128,7 +128,7 @@ The last expression in any function is what is returned. Alternatively, you can 
 
 You can define an enum with the following syntax
 
-```ocaml
+```scala
 type Color = do
     Red or
     Green or
@@ -143,7 +143,7 @@ end
 
 You can shorten the above declaration of `Color` to
 
-```ocaml
+```scala
 type Color do
     Red or
     Green or
@@ -155,7 +155,7 @@ pretty much removing the `=`.
 
 Enums let you define a something which can be any variant of a set of values. Another powerful feature of enums is that you can associate some data with a variant. Here's an example.
 
-```ocaml
+```scala
 type Message do
     Success or
     Failure(Str)
@@ -172,7 +172,7 @@ The data you can associate with an enum variants can also be much more structure
 
 You can define a record with the following syntax
 
-```ocaml
+```scala
 type Person do
     name: Str and
     age: Int and
@@ -191,7 +191,7 @@ Records are a lot like structs in other language.
 
 You can also use `type` to alias pre-existing types.
 
-```ocaml
+```scala
 type MyInt = Int
 ```
 
@@ -203,7 +203,7 @@ Two useful enums defined in the standard library are `Option` and `Result`.
 
 Option is Lite's replacement for a `None`, `Nil`, or `Null` value. It lets you express that a value can either be *some*thing or nothing. It's defined as the following.
 
-```ocaml
+```scala
 type Option[T] do
     Some(T) or
     None
@@ -212,7 +212,7 @@ end
 
 You can use it in the following manner.
 
-```ocaml
+```scala
 func main() do
     let an_int = Some(10);
     println(an_int);
@@ -228,7 +228,7 @@ The reason you can directly access the `Some` and `None` variants of `Option` is
 
 Result is Lite's take on error handling. You can use `Result` to represent a successful operation with some value attached, or an error. It's defined as the following.
 
-```ocaml
+```scala
 type Result[T, E] do
     Ok(T) or
     Err(E)
@@ -239,7 +239,7 @@ end
 
 One important feature Lite has is _pattern matching_, through its `match` syntax. You can use pattern matching to compare some value against _patterns_, and run some code based on what pattern matches. Patterns can be something like a constant value, or something like a range or tuple. You can also destructure things like records and enums.
 
-```ocaml
+```scala
 type Status do
     Finished or
     Pending or
@@ -259,7 +259,7 @@ end
 
 You can also match against enums with variants that have values attached. We can display this with the build in `Option` enum.
 
-```ocaml
+```scala
 type User do
     name: Str
 end
@@ -285,7 +285,7 @@ Like `if`, `for`, and `while`, Lite's `match` is also an expression. It evaluate
 
 Lite has support for _algebraic effects_. Algebraic effects are a way for you to define some "effect" that a function may exhibit, and in turn handle them. You can draw a comparison with languages with `try/except`, like Python. The difference is that instead of catching exceptions, however, you can catch any kind of effect. Additionally, instead of stopping execution of the function, you can resume operation while also being able to give back some value to the function. Here's an example which defines the functionality of generators through effects.
 
-```ocaml
+```scala
 effect Yield[T] do
     func yield(a: T)
 end
