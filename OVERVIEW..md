@@ -153,7 +153,7 @@ end
 
 pretty much removing the `=`.
 
-Enums let you define a something which can be any variant of a set of values. Another powerful feature of enums is that you can associate some data with a variant. Here's an example.
+Enums let you define something which can be any variant of a set of values. Another powerful feature of enums is that you can associate some data with a variant. Here's an example.
 
 ```scala
 type Message do
@@ -283,7 +283,7 @@ Like `if`, `for`, and `while`, Lite's `match` is also an expression. It evaluate
 
 ## Algebraic Effects
 
-Lite has support for _algebraic effects_. Algebraic effects are a way for you to define some "effect" that a function may exhibit, and in turn handle them. You can draw a comparison with languages with `try/except`, like Python. The difference is that instead of catching exceptions, however, you can catch any kind of effect. Additionally, instead of stopping execution of the function, you can resume operation while also being able to give back some value to the function. Here's an example which defines the functionality of generators through effects.
+Lite has support for _algebraic effects_. Algebraic effects are a way for you to define some "effect" that a function may exhibit, and in turn handle them. You can draw a comparison with languages with `try/except`, like Python. The difference is that instead of catching exceptions, you can catch any kind of effect. Additionally, instead of stopping execution of the function, you can resume operation while also being able to give back some value to the function. Here's an example which defines the functionality of generators through effects.
 
 ```scala
 effect Yield[T] do
