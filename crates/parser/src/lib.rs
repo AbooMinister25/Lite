@@ -6,6 +6,8 @@
 #![allow(clippy::must_use_candidate)]
 #![allow(clippy::unnecessary_wraps)]
 #![allow(clippy::missing_const_for_fn)]
+#![allow(clippy::return_self_not_must_use)]
+#![allow(clippy::module_name_repetitions)]
 
 pub mod ast;
 pub mod errors;
@@ -16,7 +18,6 @@ pub mod statement;
 
 use crate::ast::Statement;
 use crate::errors::{ErrorKind, ParserError};
-use ariadne::{Color, ColorGenerator, Fmt, Label, Report, ReportBuilder, ReportKind, Source};
 use lexer::{tokens::TokenKind, Lexer};
 use span::{Span, Spanned};
 
