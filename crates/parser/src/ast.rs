@@ -3,13 +3,14 @@
 //! to represent different parts of the AST. The most notable are the
 //! `Expr` and `Statement` enums.
 
+use serde::Serialize;
 use span::Spanned;
 use std::fmt;
 
 /// Kinds of Literals
 ///
 /// integers, floats, booleans, strings, identifiers, and chars.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub enum LiteralKind {
     /// Integer literal (`10`)
     Int(i64),
@@ -40,7 +41,7 @@ impl fmt::Display for LiteralKind {
 }
 
 /// Binary operators
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub enum BinOpKind {
     /// `+` operator
     Add,
@@ -92,7 +93,7 @@ impl fmt::Display for BinOpKind {
 }
 
 /// Unary operators
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub enum UnaryOpKind {
     /// `!` operator
     Not,
@@ -116,7 +117,7 @@ impl fmt::Display for UnaryOpKind {
 /// A range
 ///
 /// `1..10`, `3..=9`
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Range {
     pub start: Expr,
     pub end: Expr,
@@ -130,7 +131,7 @@ impl fmt::Display for Range {
 }
 
 /// The different patterns that Lite's pattern matching allows
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub enum PatKind {
     /// Wildcard (`_`)
     Wild,
@@ -166,7 +167,7 @@ impl fmt::Display for PatKind {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct MatchArm {
     pub pattern: PatKind,
     pub guard: Option<Expr>,
@@ -183,7 +184,7 @@ impl fmt::Display for MatchArm {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub enum Annotation {
     Single(String),
     Tuple(Vec<Annotation>),
@@ -206,7 +207,7 @@ impl fmt::Display for Annotation {
 
 /// A statement is some standalone unit which does something comprised of
 /// one or more statements.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub enum Statement {
     /// An expression statement
     Expression(Spanned<Expr>),
@@ -308,7 +309,7 @@ impl fmt::Display for Statement {
 }
 
 /// An expression is some item that evaluates to some value
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub enum Expr {
     /// Literals (`10`, `"Hi"`)
     Literal(LiteralKind),

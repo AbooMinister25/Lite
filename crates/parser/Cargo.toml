@@ -10,3 +10,7 @@ lexer = { path = "../lexer" }
 error = { path = "../error" }
 span = { path = "../span" }
 ariadne = "0.1.5"
+serde = { version = "1.0.144", features = ["derive"] }
+
+[dev-dependencies]
+insta = { version = "1.19.1", features = ["yaml"] }

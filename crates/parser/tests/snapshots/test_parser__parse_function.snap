@@ -1,0 +1,35 @@
+---
+source: crates/parser/tests/test_parser.rs
+expression: ast
+---
+- - Function:
+      name:
+        - Ident: foo
+        - start: 6
+          end: 9
+      public: false
+      params:
+        - (Ident a)
+        - (Ident b)
+      annotations:
+        - - Single: int
+          - start: 11
+            end: 17
+        - - Single: int
+          - start: 19
+            end: 25
+      return_annotation: ~
+      body:
+        - Block:
+            - - Return:
+                  - Literal:
+                      Int: 10
+                  - start: 40
+                    end: 42
+              - start: 33
+                end: 42
+        - start: 26
+          end: 46
+  - start: 1
+    end: 52
+

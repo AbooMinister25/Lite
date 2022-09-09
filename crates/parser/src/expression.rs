@@ -15,7 +15,7 @@ impl<'a> Parser<'a> {
     /// ```
     /// use parser::Parser;
     ///
-    /// let mut parser = Parser::new("5 + 5", "main.lt")
+    /// let mut parser = Parser::new("5 + 5", "main.lt");
     /// let (expr, span) = parser.parse_expression(1).expect("Parser encountered an error");
     /// ```
     ///

@@ -34,7 +34,7 @@ use span::{Span, Spanned};
 /// end
 /// "#;
 ///
-/// let mut parser = Parser::new(source, "main.lt")
+/// let mut parser = Parser::new(source, "main.lt");
 /// ```
 pub struct Parser<'a> {
     source: &'a str,
@@ -160,26 +160,5 @@ impl<'a> Parser<'a> {
                 _ => self.advance(),
             };
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::ast::{Expr, LiteralKind};
-
-    #[test]
-    fn its_alive() {
-        let mut parser = Parser::new("5", "main.lt");
-        let (ast, errors) = parser.parse();
-
-        assert!(errors.is_empty());
-        assert_eq!(
-            ast,
-            vec![(
-                Statement::Expression((Expr::Literal(LiteralKind::Int(5)), Span::from(0..1))),
-                Span::from(0..1)
-            )]
-        );
     }
 }

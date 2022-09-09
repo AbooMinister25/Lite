@@ -3,12 +3,13 @@
 
 #![warn(clippy::pedantic, clippy::nursery)]
 
+use serde::Serialize;
 use std::fmt;
 use std::ops::Range;
 
 pub type Spanned<T> = (T, Span);
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Serialize)]
 pub struct Span {
     pub start: usize,
     pub end: usize,

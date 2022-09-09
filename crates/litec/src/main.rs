@@ -59,11 +59,11 @@ fn run_string(source: &str, filename: &str, print_tokens: bool, print_ast: bool)
     let (ast, errors) = parser.parse();
     reporter.add_reports(errors);
 
+    reporter.report().expect("Error while reporting errors");
+
     if print_ast {
         pretty_ast(ast);
     }
-
-    reporter.report().expect("Error while reporting errors");
 }
 
 fn compile_file(filename: &str, print_tokens: bool, print_ast: bool) {
