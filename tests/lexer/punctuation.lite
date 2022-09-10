@@ -1,3 +1,0 @@
-// expect: tokens OpenParen CloseParen OpenBracket CloseBracket OpenBrace CloseBrace Comma Dot Semicolon Colon
-
-( ) [ ] { } , . ; :

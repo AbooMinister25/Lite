@@ -1,3 +1,0 @@
-// expect: tokens Equal EqualEqual Bang BangEqual Greater GreaterEqual Less LessEqual Plus PlusEqual Minus MinusEqual Star StarEqual Slash SlashEqual
-
-= == ! != > >= < <= + += - -= * *= / /=

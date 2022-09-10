@@ -1,5 +1,0 @@
-// expect: parse While[expr: Bool[true] body: Block[Call[Ident[print](String[Hi])]]]
-
-while true do
-    print("Hi")
-end

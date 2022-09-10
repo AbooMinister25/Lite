@@ -1,5 +1,0 @@
-// expect: parse Block[Call[Ident[print](String[hi])]]
-
-do
-    print("hi")
-end

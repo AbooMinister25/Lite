@@ -1,3 +1,0 @@
-// expect: parse Array[Int[1], Int[2], Int[3]] Array[String[foo], String[bar], String[baz]] Array[Ident[hello], Ident[hey], Ident[bye]] Array[Char[a], Char[b], Char[c]]
-
-[1, 2, 3] ["foo", "bar", "baz"] [hello, hey, bye] ['a', 'b', 'c']

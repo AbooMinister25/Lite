@@ -1,2 +1,0 @@
-// expect: tokens Error("Unterminated string literal. Expected closing quote, instead found EoF (End of File)")
-"Hi

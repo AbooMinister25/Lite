@@ -1,5 +1,0 @@
-// expect: parse For[var: Ident[i] iter: Ident[lst] body: Block[Call[Ident[print](String[Hi])]]]
-
-for i in lst do
-    print("Hi")
-end
