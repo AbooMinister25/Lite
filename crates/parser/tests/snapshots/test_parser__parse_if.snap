@@ -1,0 +1,102 @@
+---
+source: crates/parser/tests/test_parser.rs
+expression: ast
+---
+- - Expression:
+      - If:
+          condition:
+            - Binary:
+                op: "=="
+                lhs:
+                  - Literal:
+                      Int: 1
+                  - start: 4
+                    end: 5
+                rhs:
+                  - Literal:
+                      Int: 1
+                  - start: 9
+                    end: 10
+            - start: 4
+              end: 10
+          body:
+            - Block:
+                - - Expression:
+                      - Call:
+                          callee:
+                            - Ident: println
+                            - start: 18
+                              end: 25
+                          args:
+                            - - Literal:
+                                  String: All is right with the world
+                              - start: 28
+                                end: 55
+                      - start: 18
+                        end: 56
+                  - start: 18
+                    end: 56
+            - start: 11
+              end: 61
+          else_:
+            - If:
+                condition:
+                  - Binary:
+                      op: "=="
+                      lhs:
+                        - Literal:
+                            Int: 1
+                        - start: 65
+                          end: 66
+                      rhs:
+                        - Literal:
+                            Int: 2
+                        - start: 70
+                          end: 71
+                  - start: 65
+                    end: 71
+                body:
+                  - Block:
+                      - - Expression:
+                            - Call:
+                                callee:
+                                  - Ident: println
+                                  - start: 79
+                                    end: 86
+                                args:
+                                  - - Literal:
+                                        String: no its not??
+                                    - start: 89
+                                      end: 101
+                            - start: 79
+                              end: 102
+                        - start: 79
+                          end: 102
+                  - start: 72
+                    end: 107
+                else_:
+                  - Block:
+                      - - Expression:
+                            - Call:
+                                callee:
+                                  - Ident: println
+                                  - start: 115
+                                    end: 122
+                                args:
+                                  - - Literal:
+                                        String: what the heck
+                                    - start: 125
+                                      end: 138
+                            - start: 115
+                              end: 139
+                        - start: 115
+                          end: 139
+                  - start: 108
+                    end: 143
+            - start: 62
+              end: 149
+      - start: 1
+        end: 149
+  - start: 1
+    end: 149
+

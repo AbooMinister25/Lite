@@ -1,0 +1,23 @@
+---
+source: crates/parser/tests/test_parser.rs
+expression: ast
+---
+- - Expression:
+      - Ident: foo
+      - start: 0
+        end: 3
+  - start: 0
+    end: 3
+- - Expression:
+      - Ident: _bar
+      - start: 4
+        end: 8
+  - start: 4
+    end: 8
+- - Expression:
+      - Ident: a123
+      - start: 9
+        end: 13
+  - start: 9
+    end: 13
+

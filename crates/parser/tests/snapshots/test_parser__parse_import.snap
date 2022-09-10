@@ -1,0 +1,11 @@
+---
+source: crates/parser/tests/test_parser.rs
+expression: ast
+---
+- - Import:
+      - Ident: foo
+      - start: 7
+        end: 10
+  - start: 0
+    end: 10
+

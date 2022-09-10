@@ -1,0 +1,47 @@
+---
+source: crates/parser/tests/test_parser.rs
+expression: ast
+---
+- - Expression:
+      - Literal:
+          Int: 10
+      - start: 0
+        end: 2
+  - start: 0
+    end: 2
+- - Expression:
+      - Literal:
+          Float: 3.5
+      - start: 3
+        end: 6
+  - start: 3
+    end: 6
+- - Expression:
+      - Literal:
+          Bool: true
+      - start: 7
+        end: 11
+  - start: 7
+    end: 11
+- - Expression:
+      - Literal:
+          Bool: false
+      - start: 12
+        end: 17
+  - start: 12
+    end: 17
+- - Expression:
+      - Literal:
+          String: hello world
+      - start: 20
+        end: 31
+  - start: 20
+    end: 31
+- - Expression:
+      - Literal:
+          Char: c
+      - start: 34
+        end: 35
+  - start: 34
+    end: 35
+

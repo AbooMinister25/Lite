@@ -1,3 +1,1 @@
-func foo(a: int, b: int) do
-    return 10
-end
+func foo(x: (int, int)) do 10 end

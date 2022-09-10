@@ -1,0 +1,23 @@
+---
+source: crates/parser/tests/test_parser.rs
+expression: ast
+---
+- - Expression:
+      - Tuple:
+          - - Literal:
+                Int: 1
+            - start: 1
+              end: 2
+          - - Literal:
+                Int: 2
+            - start: 4
+              end: 5
+          - - Literal:
+                Int: 3
+            - start: 7
+              end: 8
+      - start: 0
+        end: 9
+  - start: 0
+    end: 9
+

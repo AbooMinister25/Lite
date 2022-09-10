@@ -1,0 +1,49 @@
+---
+source: crates/parser/tests/test_parser.rs
+expression: ast
+---
+- - Expression:
+      - For:
+          var:
+            - Ident: i
+            - start: 5
+              end: 6
+          iter:
+            - Array:
+                - - Literal:
+                      Int: 1
+                  - start: 11
+                    end: 12
+                - - Literal:
+                      Int: 2
+                  - start: 14
+                    end: 15
+                - - Literal:
+                      Int: 3
+                  - start: 17
+                    end: 18
+            - start: 10
+              end: 19
+          body:
+            - Block:
+                - - Expression:
+                      - Call:
+                          callee:
+                            - Ident: println
+                            - start: 27
+                              end: 34
+                          args:
+                            - - Ident: i
+                              - start: 35
+                                end: 36
+                      - start: 27
+                        end: 37
+                  - start: 27
+                    end: 37
+            - start: 20
+              end: 41
+      - start: 1
+        end: 41
+  - start: 1
+    end: 41
+

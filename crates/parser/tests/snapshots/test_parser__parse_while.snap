@@ -1,0 +1,45 @@
+---
+source: crates/parser/tests/test_parser.rs
+expression: ast
+---
+- - Expression:
+      - While:
+          expr:
+            - Binary:
+                op: "=="
+                lhs:
+                  - Literal:
+                      Int: 1
+                  - start: 7
+                    end: 8
+                rhs:
+                  - Literal:
+                      Int: 1
+                  - start: 12
+                    end: 13
+            - start: 7
+              end: 13
+          body:
+            - Block:
+                - - Expression:
+                      - Call:
+                          callee:
+                            - Ident: println
+                            - start: 21
+                              end: 28
+                          args:
+                            - - Literal:
+                                  String: All is right with the world
+                              - start: 31
+                                end: 58
+                      - start: 21
+                        end: 59
+                  - start: 21
+                    end: 59
+            - start: 14
+              end: 63
+      - start: 1
+        end: 63
+  - start: 1
+    end: 63
+

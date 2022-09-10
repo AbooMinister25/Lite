@@ -1,0 +1,31 @@
+---
+source: crates/parser/tests/test_parser.rs
+expression: ast
+---
+- - Let:
+      name:
+        - Ident: foo
+        - start: 5
+          end: 8
+      value:
+        - Literal:
+            Int: 10
+        - start: 11
+          end: 13
+      mutable: false
+  - start: 1
+    end: 13
+- - Let:
+      name:
+        - Ident: foo
+        - start: 22
+          end: 25
+      value:
+        - Literal:
+            Int: 20
+        - start: 28
+          end: 30
+      mutable: true
+  - start: 14
+    end: 30
+

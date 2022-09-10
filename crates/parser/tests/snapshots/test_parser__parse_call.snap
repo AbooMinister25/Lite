@@ -1,0 +1,25 @@
+---
+source: crates/parser/tests/test_parser.rs
+expression: ast
+---
+- - Expression:
+      - Call:
+          callee:
+            - Ident: foo
+            - start: 0
+              end: 3
+          args:
+            - - Ident: a
+              - start: 4
+                end: 5
+            - - Ident: b
+              - start: 7
+                end: 8
+            - - Ident: c
+              - start: 10
+                end: 11
+      - start: 0
+        end: 12
+  - start: 0
+    end: 12
+
