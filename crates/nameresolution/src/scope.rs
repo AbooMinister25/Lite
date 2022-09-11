@@ -16,11 +16,3 @@ pub struct Scope {
     pub definitions: HashMap<String, Definition>,
 }
 
-impl Scope {
-    //TODO: Can't create a `Default` implementation for the struct
-    pub fn new() -> Self {
-        Self {
-            definitions: HashMap::new(),
-        }
-    }
-}
