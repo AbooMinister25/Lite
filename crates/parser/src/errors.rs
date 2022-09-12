@@ -18,7 +18,7 @@ pub enum ErrorKind {
     Other(String, Span),
 }
 
-/// This struct hold information related to an error
+/// This struct holds information related to an error
 /// in the parser, including its type, the error
 /// message, and an optional help message
 #[derive(Debug)]
@@ -36,9 +36,7 @@ impl ParserError {
             help,
         }
     }
-}
 
-impl ParserError {
     pub fn with_help(self, help: String) -> Self {
         Self {
             kind: self.kind,
