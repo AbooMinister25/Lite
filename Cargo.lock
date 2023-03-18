@@ -186,6 +186,8 @@ dependencies = [
 name = "nameresolution"
 version = "0.1.0"
 dependencies = [
+ "ariadne",
+ "error",
  "parser",
  "span",
 ]
