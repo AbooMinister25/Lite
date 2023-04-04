@@ -49,7 +49,7 @@ pub enum TokenKind {
     End,
     False,
     For,
-    Func,
+    Fun,
     If,
     In,
     Import,
@@ -107,7 +107,7 @@ impl fmt::Display for TokenKind {
             Self::End => write!(f, "end"),
             Self::False => write!(f, "false"),
             Self::For => write!(f, "for"),
-            Self::Func => write!(f, "func"),
+            Self::Fun => write!(f, "fun"),
             Self::If => write!(f, "if"),
             Self::In => write!(f, "in"),
             Self::Import => write!(f, "import"),
@@ -120,7 +120,7 @@ impl fmt::Display for TokenKind {
             Self::True => write!(f, "true"),
             Self::Type => write!(f, "type"),
             Self::While => write!(f, "while"),
-            Self::Error(s) => write!(f, "{}", s),
+            Self::Error(s) => write!(f, "{s}"),
             Self::EoF => write!(f, "End of File"),
         }
     }

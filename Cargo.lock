@@ -111,6 +111,7 @@ dependencies = [
 name = "lexer"
 version = "0.1.0"
 dependencies = [
+ "span",
  "unicode-xid",
 ]
 
