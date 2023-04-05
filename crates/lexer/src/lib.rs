@@ -308,6 +308,12 @@ impl<'a> Lexer<'a> {
 
         self.create_token(TokenKind::EoF, 0)
     }
+
+    /// Wrapper around `lex_token` which lexes and returns the
+    /// current`Token` in the token stream
+    pub fn next_token(&mut self) -> Spanned<TokenKind> {
+        self.lex_token()
+    }
 }
 
 impl<'a> Iterator for Lexer<'a> {
