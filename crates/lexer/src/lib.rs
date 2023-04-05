@@ -21,6 +21,7 @@ use crate::token::TokenKind;
 
 fn get_keyword(name: &str) -> TokenKind {
     match name {
+        "and" => TokenKind::And,
         "do" => TokenKind::Do,
         "else" => TokenKind::Else,
         "end" => TokenKind::End,
@@ -33,6 +34,7 @@ fn get_keyword(name: &str) -> TokenKind {
         "let" => TokenKind::Let,
         "match" => TokenKind::Match,
         "mut" => TokenKind::Mut,
+        "or" => TokenKind::Or,
         "pub" => TokenKind::Pub,
         "return" => TokenKind::Return,
         "trait" => TokenKind::Trait,

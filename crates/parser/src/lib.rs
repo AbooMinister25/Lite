@@ -4,6 +4,7 @@
 
 pub mod ast;
 pub mod error;
+pub mod precedence;
 
 use lexer::{token::TokenKind, Lexer};
 use span::{Span, Spanned};

@@ -44,6 +44,7 @@ pub enum TokenKind {
     Ident(String),
 
     // Keywords
+    And,
     Do,
     Else,
     End,
@@ -56,6 +57,7 @@ pub enum TokenKind {
     Let,
     Match,
     Mut,
+    Or,
     Pub,
     Return,
     Trait,
@@ -71,6 +73,7 @@ pub enum TokenKind {
 impl fmt::Display for TokenKind {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
+            Self::And => write!(f, "and"),
             Self::OpenParen => write!(f, "("),
             Self::CloseParen => write!(f, ")"),
             Self::OpenBracket => write!(f, "["),
@@ -114,6 +117,7 @@ impl fmt::Display for TokenKind {
             Self::Let => write!(f, "let"),
             Self::Match => write!(f, "match"),
             Self::Mut => write!(f, "mut"),
+            Self::Or => write!(f, "or"),
             Self::Pub => write!(f, "pub"),
             Self::Return => write!(f, "return"),
             Self::Trait => write!(f, "trait"),
