@@ -3,6 +3,7 @@
 #![allow(clippy::must_use_candidate)]
 
 pub mod ast;
+pub mod error;
 
 use lexer::{token::TokenKind, Lexer};
 use span::{Span, Spanned};
