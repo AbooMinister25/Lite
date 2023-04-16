@@ -1,10 +1,14 @@
 #![warn(clippy::pedantic, clippy::nursery)]
 #![allow(clippy::module_name_repetitions)]
 #![allow(clippy::must_use_candidate)]
+#![allow(clippy::unnecessary_wraps)]
 
 pub mod ast;
 pub mod error;
+pub mod expression;
 pub mod precedence;
+
+use crate::error::ParserError;
 
 use lexer::{token::TokenKind, Lexer};
 use span::{Span, Spanned};
@@ -53,5 +57,16 @@ impl<'a> Parser<'a> {
 
     fn at_end(&mut self) -> bool {
         self.peek().0 == TokenKind::EoF
+    }
+
+    fn consume(&mut self, expected: &TokenKind, message: &str) -> Result<(), ParserError> {
+        let token = self.peek();
+
+        if token.0 == *expected {
+            self.advance(); //  next token was the expected one, so advance
+            return Ok(());
+        }
+
+        Err(ParserError::new(message.to_string(), token.1))
     }
 }

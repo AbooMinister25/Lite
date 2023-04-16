@@ -2,9 +2,16 @@ use std::fmt::Display;
 
 use span::Span;
 
+#[derive(Debug)]
 pub struct ParserError {
     message: String,
     span: Span,
+}
+
+impl ParserError {
+    pub const fn new(message: String, span: Span) -> Self {
+        Self { message, span }
+    }
 }
 
 impl Display for ParserError {

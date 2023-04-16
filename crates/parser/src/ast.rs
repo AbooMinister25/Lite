@@ -277,8 +277,8 @@ impl fmt::Display for Expr {
                         .collect::<Vec<String>>()
                         .join(", ")
                 ),
-                Self::Unary { op, rhs } => format!("(Unary ({op}{}))", rhs.0),
-                Self::Binary { op, lhs, rhs } => format!("(Binary ({} {op} {}))", lhs.0, rhs.0),
+                Self::Unary { op, rhs } => format!("(Unary ({op} {}))", rhs.0),
+                Self::Binary { op, lhs, rhs } => format!("(Binary ({op} {} {}))", lhs.0, rhs.0),
                 Self::Call { callee, args } => format!(
                     "(Call {}({}) )",
                     callee.0,
@@ -288,7 +288,7 @@ impl fmt::Display for Expr {
                         .join(", ")
                 ),
                 Self::Assignment { name, op, value } =>
-                    format!("(Assignment {} {op} {})", name.0, value.0),
+                    format!("(Assignment ({op} {} {}))", name.0, value.0),
                 Self::Block(c) => format!(
                     "(Block {})",
                     c.iter()
