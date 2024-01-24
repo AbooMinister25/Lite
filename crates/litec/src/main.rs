@@ -25,9 +25,14 @@ fn main() {
     if let Some(s) = args.eval.as_deref() {
         let mut parser = Parser::new(s, "eval");
 
-        match parser.parse_expression(1) {
-            Ok(expr) => println!("{}", expr.0),
-            Err(e) => eprintln!("{e}"),
+        let (nodes, errors) = parser.parse();
+
+        for node in nodes {
+            println!("{}", node.0);
+        }
+
+        for error in errors {
+            println!("{error}");
         }
     }
 }

@@ -7,9 +7,11 @@ pub mod ast;
 pub mod error;
 pub mod expression;
 pub mod precedence;
+pub mod statement;
 
 use crate::error::ParserError;
 
+use ast::Statement;
 use lexer::{token::TokenKind, Lexer};
 use span::{Span, Spanned};
 
@@ -31,6 +33,58 @@ impl<'a> Parser<'a> {
             filename,
             current_token_span: Span::from(0..0),
             peeked: None,
+        }
+    }
+
+    /// Parses and returns a tuple of the parsed AST, and any errors that may have
+    /// occurred.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use parser::Parser;
+    ///
+    /// let source = r#"
+    /// fun main() do
+    ///     println("Hello World")
+    /// end
+    /// "#;
+    ///
+    /// let mut parser = Parser::new(source, "main.lt");
+    /// let (ast, errors) = parser.parse();
+    /// ```
+    pub fn parse(&mut self) -> (Vec<Spanned<Statement>>, Vec<ParserError>) {
+        let mut nodes = vec![];
+        let mut errors = vec![];
+
+        while !self.at_end() {
+            let node = self.parse_statement();
+            match node {
+                Ok(n) => nodes.push(n),
+                Err(e) => {
+                    errors.push(e);
+                    self.synchronize();
+                }
+            }
+        }
+
+        (nodes, errors)
+    }
+
+    fn synchronize(&mut self) {
+        while !self.at_end() {
+            match self.peek().0 {
+                TokenKind::Fun
+                | TokenKind::Let
+                | TokenKind::Return
+                | TokenKind::Import
+                | TokenKind::Trait
+                | TokenKind::If
+                | TokenKind::For
+                | TokenKind::While
+                | TokenKind::Match => break,
+                _ => self.advance(),
+            };
         }
     }
 
